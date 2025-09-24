@@ -31,6 +31,9 @@ import {
 import { useOrderList } from "@/lib/shopee/useOrderList"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { MapPin, MoreVertical } from "lucide-react"
+import DialogTracking from "@/components/dialog-tracking"
+import { useSession } from "next-auth/react"
+import ModernGlassPreloader from "@/components/modern-glass-preloader"
 const Eye = ({ className }: { className?: string }) => (
   <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
     <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
@@ -122,56 +125,6 @@ const shopeeSalesData = [
   { date: "2024-01-07", sales: 3800, orders: 72, rating: 4.8, visitors: 1890 },
 ]
 
-const shopeeProducts = [
-  {
-    id: 1,
-    name: "Smartphone Case Premium",
-    sku: "SP-PHN-001",
-    price: "Rp 149.000",
-    stock: 245,
-    sold: 189,
-    rating: 4.8,
-    reviews: 156,
-    status: "active",
-    category: "Electronics",
-  },
-  {
-    id: 2,
-    name: "Tas Wanita Elegant",
-    sku: "SP-BAG-002",
-    price: "Rp 299.000",
-    stock: 89,
-    sold: 134,
-    rating: 4.9,
-    reviews: 98,
-    status: "active",
-    category: "Fashion",
-  },
-  {
-    id: 3,
-    name: "Sepatu Sneakers Casual",
-    sku: "SP-SHO-003",
-    price: "Rp 399.000",
-    stock: 156,
-    sold: 267,
-    rating: 4.7,
-    reviews: 203,
-    status: "active",
-    category: "Fashion",
-  },
-  {
-    id: 4,
-    name: "Kitchen Utensil Set",
-    sku: "SP-KIT-004",
-    price: "Rp 199.000",
-    stock: 0,
-    sold: 89,
-    rating: 4.6,
-    reviews: 67,
-    status: "out_of_stock",
-    category: "Home & Living",
-  },
-]
 
 const categoryPerformance = [
   { category: "Electronics", sales: 4500, orders: 89 },
@@ -184,18 +137,30 @@ export default function ShopeePage() {
   const [searchTerm, setSearchTerm] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
   const [categoryFilter, setCategoryFilter] = useState("all")
-  const { orders, page, hasMore, loadOrders, loading, error, dataDetail } = useOrderList(10)
-  const filteredProducts = shopeeProducts.filter((product) => {
-    const matchesSearch =
-      product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      product.sku.toLowerCase().includes(searchTerm.toLowerCase())
-    const matchesStatus = statusFilter === "all" || product.status === statusFilter
-    const matchesCategory = categoryFilter === "all" || product.category === categoryFilter
-    return matchesSearch && matchesStatus && matchesCategory
-  })
-  if (dataDetail != undefined) {
-    console.log(dataDetail)
+  const [openDialog, setOpenDialog] = useState(false)
+  const [product, setProduct] = useState<string>("")
+  const [serialNumber, setSerialNumber] = useState<string>("")
+  const [carrier, setCarrier] = useState<string>("")
+  const { data: session, status } = useSession();
+
+  // const filteredProducts = shopeeProducts.filter((product) => {
+  //   const matchesSearch =
+  //     product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+  //     product.sku.toLowerCase().includes(searchTerm.toLowerCase())
+  //   const matchesStatus = statusFilter === "all" || product.status === statusFilter
+  //   const matchesCategory = categoryFilter === "all" || product.category === categoryFilter
+  //   return matchesSearch && matchesStatus && matchesCategory
+  // })
+
+  const { page, hasMore, loadOrders, loading, error, dataDetail } = useOrderList(10, session?.user?.accessToken ?? "")
+  const handleOpenDialog = (product: string, serialNumber: string, carrier: string) => {
+    setOpenDialog(true)
+    setProduct(product)
+    setSerialNumber(serialNumber)
+    setCarrier(carrier)
   }
+  if (status == "loading") return <ModernGlassPreloader />;
+
   return (
     <div className="space-y-6 bg-white min-h-screen p-6 ">
       <div className="flex flex-col  gap-4 md:flex-row md:items-center md:justify-between">
@@ -491,7 +456,7 @@ export default function ShopeePage() {
           <div className="rounded-md border overflow-x-auto">
             <Table>
               <TableHeader>
-                <TableRow>
+                <TableRow className="bg-gray-50">
                   <TableHead className="w-[60px] text-center">No</TableHead>
                   <TableHead>Order SN</TableHead>
                   <TableHead>Produk</TableHead>
@@ -499,13 +464,13 @@ export default function ShopeePage() {
                   <TableHead>Total Harga</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Metode Bayar</TableHead>
-                  <TableHead>No. Resi</TableHead>
+                  {/* <TableHead>No. Resi</TableHead> */}
                   <TableHead className="text-center w-auto">Aksi</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {!loading && dataDetail.map((order, idx) => (
-                  <TableRow key={order.order_sn}>
+                  <TableRow key={order.order_sn} className={idx % 2 === 0 ? "bg-white" : "bg-gray-50/70"}>
                     <TableCell className="text-center font-medium">
                       {(page - 1) * 5 + idx + 1}
                     </TableCell>
@@ -518,9 +483,9 @@ export default function ShopeePage() {
                       </Badge>
                     </TableCell>
                     <TableCell>{order.payment_method}</TableCell>
-                    <TableCell>
-                      {order.package_list[0].package_number ? order.package_list[0].package_number : "-"}
-                    </TableCell>
+                    {/* <TableCell>
+                      {order.tracking_number ? order.tracking_number : "-"}
+                    </TableCell> */}
                     <TableCell>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
@@ -535,7 +500,7 @@ export default function ShopeePage() {
                             <Eye className="mr-2 h-4 w-4" /> Detail
                           </DropdownMenuItem>
                           {order.package_list[0].package_number && (
-                            <DropdownMenuItem onClick={() => console.log("Lacak")}>
+                            <DropdownMenuItem onClick={() => handleOpenDialog(order.item_list[0].item_name, order.order_sn, order.shipping_carrier)}>
                               <MapPin className="mr-2 h-4 w-4" /> Lacak
                             </DropdownMenuItem>
                           )}
@@ -617,6 +582,7 @@ export default function ShopeePage() {
           </div>
         </CardContent>
       </Card>
+      <DialogTracking token={session?.user?.accessToken ?? ""} setTrackOpen={setOpenDialog} trackOpen={openDialog} product={product} serialNumber={serialNumber} carrier={carrier} />
     </div>
   )
 }

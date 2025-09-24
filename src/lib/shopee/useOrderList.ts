@@ -2,8 +2,9 @@
 
 import { useState, useEffect } from "react";
 import { fetchOrderDetail, fetchOrderList, Order } from "./api";
+import { useSession } from "next-auth/react";
 
-export function useOrderList(pageSize: number = 20) {
+export function useOrderList(pageSize: number = 20, token: string) {
   const [orders, setOrders] = useState<Order[]>([]);
   const [cursors, setCursors] = useState<string[]>([""]); // simpan semua cursor
   const [page, setPage] = useState(1);
@@ -12,8 +13,8 @@ export function useOrderList(pageSize: number = 20) {
   const [error, setError] = useState<string | null>(null);
   const [sn, setSn] = useState<string[]>([]);
   const [dataDetail, setDataDetail] = useState<any[]>([]);
-
   const loadOrders = async (targetPage: number) => {
+    if (!token) return; // 🔑 jangan fetch kalau belum ada token
     if (targetPage < 1 || targetPage > cursors.length) return;
 
     setLoading(true);
@@ -21,7 +22,7 @@ export function useOrderList(pageSize: number = 20) {
 
     try {
       const cursor = cursors[targetPage - 1]; // ambil cursor sesuai halaman
-      const data = await fetchOrderList(pageSize, cursor);
+      const data = await fetchOrderList(pageSize, cursor, token);
 
       const order_sns = data.response.order_list.map((o) => o.order_sn);
       setSn(order_sns);
@@ -38,7 +39,7 @@ export function useOrderList(pageSize: number = 20) {
 
       // langsung pakai order_sns (bukan sn state yang belum update)
       if (order_sns.length > 0) {
-        const detailRes = await fetchOrderDetail(order_sns);
+        const detailRes = await fetchOrderDetail(order_sns, token);
         setDataDetail(detailRes.response.order_list);
       }
 
@@ -51,8 +52,8 @@ export function useOrderList(pageSize: number = 20) {
   };
 
   useEffect(() => {
-    loadOrders(1); // mulai dari halaman pertama
-  }, [pageSize]);
+    if (token) loadOrders(1); // 🔑 hanya fetch kalau token sudah ada
+  }, [pageSize, token]);
 
   return { orders, page, hasMore, loadOrders, loading, error, dataDetail };
 }

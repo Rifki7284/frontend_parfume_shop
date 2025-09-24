@@ -1,3 +1,5 @@
+import { useSession } from "next-auth/react";
+
 export type Order = {
   order_sn: string;
   booking_sn: string;
@@ -17,11 +19,19 @@ export type OrderDetailResponse = {
 };
 export async function fetchOrderList(
   pageSize: number = 20,
-  cursor: string = ""
+  cursor: string = "",
+  token:string
 ): Promise<OrderListResponse> {
+  
   const api = process.env.NEXT_PUBLIC_API_URL;
   const res = await fetch(
-    `${api}/shopee/orders?page_size=${pageSize}&cursor=${cursor}`
+    `${api}/shopee/orders?page_size=${pageSize}&cursor=${cursor}`,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    }
   );
 
   if (!res.ok) {
@@ -31,11 +41,52 @@ export async function fetchOrderList(
   return res.json();
 }
 export async function fetchOrderDetail(
-  orderSnList: string[]
+  orderSnList: string[],
+  token: string
 ): Promise<OrderDetailResponse> {
   const api = process.env.NEXT_PUBLIC_API_URL;
   const res = await fetch(
-    `${api}/shopee/orders/detail?order_sn_list=${orderSnList.join(",")}`
+    `${api}/shopee/orders/detail?order_sn_list=${orderSnList.join(",")}`,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    }
+  );
+  if (!res.ok) throw new Error("Failed to fetch order detail");
+  return res.json();
+}
+export async function fetchOrderTrackingNumber(
+  orderSnList: string,
+  token: string
+): Promise<OrderDetailResponse> {
+  const api = process.env.NEXT_PUBLIC_API_URL;
+  const res = await fetch(
+    `${api}/shopee/orders/tracking_number?order_sn_list=${orderSnList}`,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    }
+  );
+  if (!res.ok) throw new Error("Failed to fetch order detail");
+  return res.json();
+}
+export async function fetchOrderTrackingInfo(
+  orderSnList: string,
+  token: string
+): Promise<OrderDetailResponse> {
+  const api = process.env.NEXT_PUBLIC_API_URL;
+  const res = await fetch(
+    `${api}/shopee/orders/get_tracking_info?order_sn_list=${orderSnList}`,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    }
   );
   if (!res.ok) throw new Error("Failed to fetch order detail");
   return res.json();
