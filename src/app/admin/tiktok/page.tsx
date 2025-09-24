@@ -316,10 +316,10 @@ export default function TikTokPage() {
           <h1 className="text-3xl font-bold text-balance">Data Penjualan Tiktok</h1>
           <p className="text-muted-foreground text-pretty">Kelola dan pantau performa toko di Tiktok</p>
         </div>
-        <Button>
+        {/* <Button>
           <DownloadIcon className="mr-2 h-4 w-4" />
           Export Data
-        </Button>
+        </Button> */}
       </div>
 
       {/* Engagement Stats */}
@@ -542,7 +542,7 @@ export default function TikTokPage() {
                     <TableCell>
                       {order.line_items[0]?.tracking_number || "-"}
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="text-center">
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button variant="ghost" size="icon" className="h-8 w-8 p-0">

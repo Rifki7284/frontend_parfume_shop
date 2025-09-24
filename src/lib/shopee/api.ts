@@ -91,3 +91,26 @@ export async function fetchOrderTrackingInfo(
   if (!res.ok) throw new Error("Failed to fetch order detail");
   return res.json();
 }
+export async function fetchShopPerformance(
+  start:string,
+  end:string,
+  token:string
+): Promise<OrderListResponse> {
+  
+  const api = process.env.NEXT_PUBLIC_API_URL;
+  const res = await fetch(
+    `${api}/shopee/products/sold?start_date_ge=${start}&end_date_lt=${end}`,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    }
+  );
+
+  if (!res.ok) {
+    throw new Error("Failed to fetch order list");
+  }
+
+  return res.json();
+}

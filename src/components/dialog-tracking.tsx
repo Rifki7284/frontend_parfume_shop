@@ -16,7 +16,7 @@ interface DialogTrackingProps {
     serialNumber: string
     product: string
     carrier: string
-    token:string
+    token: string
 }
 export interface TrackingInfo {
     update_time: number
@@ -60,7 +60,7 @@ const DialogTracking = ({
     useEffect(() => {
         const getData = async () => {
             try {
-                const data = await fetchOrderTrackingInfo(serialNumber)
+                const data = await fetchOrderTrackingInfo(serialNumber, token)
                 const response = data.response
                 setData(response)
 
@@ -99,7 +99,7 @@ const DialogTracking = ({
         }
         const getTracking = async () => {
             try {
-                const data = await fetchOrderTrackingNumber(serialNumber)
+                const data = await fetchOrderTrackingNumber(serialNumber, token)
                 const response = data.response
                 setTrackingNumber(response)
             } catch (err) {

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
 import { Button } from "@/components/ui/button"
@@ -34,6 +34,10 @@ import { MapPin, MoreVertical } from "lucide-react"
 import DialogTracking from "@/components/dialog-tracking"
 import { useSession } from "next-auth/react"
 import ModernGlassPreloader from "@/components/modern-glass-preloader"
+import { fetchShopPerformance } from "@/lib/shopee/api"
+import { mapPerformanceWithChange } from "@/lib/tiktok/mapPerformanceWithChange"
+import dayjs from "dayjs"
+import { StatsCard } from "@/components/stats-card"
 const Eye = ({ className }: { className?: string }) => (
   <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
     <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
@@ -151,7 +155,30 @@ export default function ShopeePage() {
   //   const matchesCategory = categoryFilter === "all" || product.category === categoryFilter
   //   return matchesSearch && matchesStatus && matchesCategory
   // })
+  const [tableLoading, setTableLoading] = useState(false);
+  const [statsNow, setStatsNow] = useState<any[]>([]);
+  const [loadStatsNow, setLoadStatsNow] = useState<boolean>(true)
+  const [loadStatsPrev, setLoadStatsPrev] = useState<boolean>(true)
+  async function loadStats(startNow: string, endNow: string, startPrev: string, endPrev: string) {
+    if (!session?.user?.accessToken) return
+    setTableLoading(true)
 
+    try {
+      const [nowRes, prevRes] = await Promise.all([
+        fetchShopPerformance(startNow, endNow, session.user.accessToken),
+        fetchShopPerformance(startPrev, endPrev, session.user.accessToken)
+      ])
+
+      const mapped = mapPerformanceWithChange(nowRes, prevRes)
+      setStatsNow(mapped)
+      setLoadStatsNow(false)
+      setLoadStatsPrev(false)
+    } catch (err) {
+      console.log(err)
+    } finally {
+      setTableLoading(false)
+    }
+  }
   const { page, hasMore, loadOrders, loading, error, dataDetail } = useOrderList(10, session?.user?.accessToken ?? "")
   const handleOpenDialog = (product: string, serialNumber: string, carrier: string) => {
     setOpenDialog(true)
@@ -159,6 +186,18 @@ export default function ShopeePage() {
     setSerialNumber(serialNumber)
     setCarrier(carrier)
   }
+  const startThisMonth = dayjs().startOf("month").format("YYYY-MM-DD");
+  const endThisMonth = dayjs().endOf("month").format("YYYY-MM-DD");
+
+  // Bulan lalu
+  const startLastMonth = dayjs().subtract(1, "month").startOf("month").format("YYYY-MM-DD");
+  const endLastMonth = dayjs().subtract(1, "month").endOf("month").format("YYYY-MM-DD");
+  useEffect(() => {
+    if (session?.user?.accessToken != undefined) {
+      loadStats(startThisMonth, endThisMonth, startLastMonth, endLastMonth)
+
+    }
+  }, [status, session?.user?.accessToken]);
   if (status == "loading") return <ModernGlassPreloader />;
 
   return (
@@ -175,78 +214,32 @@ export default function ShopeePage() {
       </div>
 
       {/* Shopee Metrics */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card className="group relative overflow-hidden bg-gradient-to-br from-emerald-50 to-emerald-100 border-0 shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-1">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-emerald-700">Total Pesanan</p>
-                <p className="text-2xl font-bold text-emerald-900">2,847</p>
-                <div className="flex items-center text-xs text-emerald-600 mt-1">
-                  <TrendingUpIcon className="mr-1 h-3 w-3" />
-                  +18% dari bulan lalu
-                </div>
-              </div>
-              <div className="h-12 w-12 rounded-lg bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                <ShoppingBagIcon className="h-6 w-6 text-white" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="group relative overflow-hidden bg-gradient-to-br from-blue-50 to-blue-100 border-0 shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-1 delay-75">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-blue-700">Rating Toko</p>
-                <p className="text-2xl font-bold text-blue-900">4.8</p>
-                <div className="flex items-center text-xs text-blue-600 mt-1">
-                  <TrendingUpIcon className="mr-1 h-3 w-3" />
-                  +0.1 dari bulan lalu
-                </div>
-              </div>
-              <div className="h-12 w-12 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                <StarIcon className="h-6 w-6 text-white" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="group relative overflow-hidden bg-gradient-to-br from-purple-50 to-purple-100 border-0 shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-1 delay-150">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-purple-700">Pengunjung Toko</p>
-                <p className="text-2xl font-bold text-purple-900">12,450</p>
-                <div className="flex items-center text-xs text-purple-600 mt-1">
-                  <TrendingUpIcon className="mr-1 h-3 w-3" />
-                  +25% dari bulan lalu
-                </div>
-              </div>
-              <div className="h-12 w-12 rounded-lg bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                <TrendingUpIcon className="h-6 w-6 text-white" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="group relative overflow-hidden bg-gradient-to-br from-orange-50 to-orange-100 border-0 shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-1 delay-200">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-orange-700">Produk Aktif</p>
-                <p className="text-2xl font-bold text-orange-900">156</p>
-                <div className="flex items-center text-xs text-orange-600 mt-1">
-                  <TrendingUpIcon className="mr-1 h-3 w-3" />
-                  +12 dari bulan lalu
-                </div>
-              </div>
-              <div className="h-12 w-12 rounded-lg bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                <PackageIcon className="h-6 w-6 text-white" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+        {statsNow.length === 0 && loadStatsNow ? (
+          // tampilkan skeleton card dummy
+          Array.from({ length: 4 }).map((_, index) => (
+            <StatsCard
+              key={index}
+              stat={{
+                title: "Loading...",
+                value: 0,
+                change: "0%",
+                changeType: "increase",
+                icon: () => <div />,
+                bgGradient: "bg-gradient-to-br from-gray-50 to-gray-100",
+                borderColor: "border-gray-200",
+                iconBg: "bg-gray-200",
+                iconColor: "text-gray-400",
+              }}
+              index={index}
+              loading={true}
+            />
+          ))
+        ) : (
+          statsNow.map((stat, index) => (
+            <StatsCard key={stat.title} stat={stat} index={index} />
+          ))
+        )}
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
@@ -486,7 +479,7 @@ export default function ShopeePage() {
                     {/* <TableCell>
                       {order.tracking_number ? order.tracking_number : "-"}
                     </TableCell> */}
-                    <TableCell>
+                    <TableCell className="text-center">
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button variant="ghost" size="icon" className="h-8 w-8 p-0">
