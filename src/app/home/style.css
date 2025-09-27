@@ -1,0 +1,28 @@
+@import "tailwindcss";
+
+@theme inline {
+  /* Font families dari Next.js font loader */
+  --font-inter: var(--font-inter);
+  --font-playfair: var(--font-playfair);
+
+  /* Warna custom */
+  --color-primary-gold: #D4AF37;
+  --color-rich-gold: #FFD700;
+  --color-deep-maroon: #800020;
+  --color-burgundy: #8B0000;
+  --color-warm-beige: #F5F5DC;
+  --color-cream-beige: #FDF6E8;
+  --color-soft-beige: #F0E6D3;
+  --color-dark-maroon: #5C0011;
+  --color-accent-gold: #FFA500;
+
+  /* Animations */
+  @keyframes float {
+    0%, 100% { transform: translateY(0px) rotate(0deg); }
+    50% { transform: translateY(-20px) rotate(5deg); }
+  }
+
+  @keyframes ripple {
+    to { transform: scale(4); opacity: 0; }
+  }
+}

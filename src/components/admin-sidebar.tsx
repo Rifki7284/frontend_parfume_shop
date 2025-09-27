@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
-import { LayoutDashboard, ShoppingBag, TrendingUp, Menu } from "lucide-react"
+import { LayoutDashboard, ShoppingBag, TrendingUp, Menu, Package } from "lucide-react"
 
 const sidebarItems = [
   {
@@ -24,11 +24,17 @@ const sidebarItems = [
     href: "/admin/shopee",
     icon: ShoppingBag,
   },
-    {
+  {
+    title: "Produk",
+    href: "/admin/product",
+    icon: Package,
+  },
+  {
     title: "Profile",
     href: "/admin/profile",
     icon: ShoppingBag,
   },
+
 ]
 
 interface AdminSidebarProps {
