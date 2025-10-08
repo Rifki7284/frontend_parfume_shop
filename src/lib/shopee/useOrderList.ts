@@ -4,7 +4,11 @@ import { useState, useEffect } from "react";
 import { fetchOrderDetail, fetchOrderList, Order } from "./api";
 import { useSession } from "next-auth/react";
 
-export function useOrderList(pageSize: number = 20, token: string) {
+export function useOrderList(
+  pageSize: number = 20,
+  token: string,
+  status: string
+) {
   const [orders, setOrders] = useState<Order[]>([]);
   const [cursors, setCursors] = useState<string[]>([""]); // simpan semua cursor
   const [page, setPage] = useState(1);
@@ -21,8 +25,10 @@ export function useOrderList(pageSize: number = 20, token: string) {
     setError(null);
 
     try {
+      setCursors([""]);
+      setHasMore(false);
       const cursor = cursors[targetPage - 1]; // ambil cursor sesuai halaman
-      const data = await fetchOrderList(pageSize, cursor, token);
+      const data = await fetchOrderList(pageSize, cursor, token, status);
 
       const order_sns = data.response.order_list.map((o) => o.order_sn);
       setSn(order_sns);
@@ -53,7 +59,6 @@ export function useOrderList(pageSize: number = 20, token: string) {
 
   useEffect(() => {
     if (token) loadOrders(1); // 🔑 hanya fetch kalau token sudah ada
-  }, [pageSize, token]);
-
+  }, [pageSize, token, status]); // ✅ tambahkan status di sini
   return { orders, page, hasMore, loadOrders, loading, error, dataDetail };
 }

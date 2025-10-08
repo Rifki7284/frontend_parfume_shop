@@ -13,11 +13,11 @@ function calcChange(now: number, prev: number) {
 export function mapPerformanceWithChange(nowRes: any, prevRes: any) {
   const now = nowRes?.data.performance?.intervals?.[0] || {}
   const prev = prevRes?.data.performance?.intervals?.[0] || {}
-
-  const ordersChange = calcChange(now.orders ?? 0, prev.orders ?? 0)
-  const gmvChange = calcChange(Number(now.gmv?.amount ?? 0), Number(prev.gmv?.amount ?? 0))
-  const soldChange = calcChange(now.units_sold ?? 0, prev.units_sold ?? 0)
-  const buyersChange = calcChange(now.buyers ?? 0, prev.buyers ?? 0)
+  
+  const ordersChange = calcChange(now.orders , prev.orders )
+  const gmvChange = calcChange(Number(now.gmv?.amount ), Number(prev.gmv?.amount ))
+  const soldChange = calcChange(now.units_sold , prev.units_sold )
+  const buyersChange = calcChange(now.buyers , prev.buyers )
 
   return [
     {

@@ -20,19 +20,25 @@ export type OrderDetailResponse = {
 export async function fetchOrderList(
   pageSize: number = 20,
   cursor: string = "",
-  token:string
+  token: string,
+  status: string = "all" // ✅ tambahkan parameter status
 ): Promise<OrderListResponse> {
-  
   const api = process.env.NEXT_PUBLIC_API_URL;
-  const res = await fetch(
-    `${api}/shopee/orders?page_size=${pageSize}&cursor=${cursor}`,
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-    }
-  );
+
+  // === Buat query parameter dinamis ===
+  const params = new URLSearchParams();
+  params.append("page_size", pageSize.toString());
+  if (cursor) params.append("cursor", cursor);
+  if (status && status.toLowerCase() !== "all") {
+    params.append("status", status);
+  }
+
+  const res = await fetch(`${api}/shopee/orders?${params.toString()}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+  });
 
   if (!res.ok) {
     throw new Error("Failed to fetch order list");
@@ -40,6 +46,7 @@ export async function fetchOrderList(
 
   return res.json();
 }
+
 export async function fetchOrderDetail(
   orderSnList: string[],
   token: string
@@ -107,7 +114,7 @@ export async function fetchShopPerformance(
       },
     }
   );
-
+  
   if (!res.ok) {
     throw new Error("Failed to fetch order list");
   }

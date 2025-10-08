@@ -9,18 +9,6 @@ import { Badge } from "@/components/ui/badge"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import {
-  Line,
-  LineChart,
-  Bar,
-  BarChart,
-  Pie,
-  PieChart,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  ResponsiveContainer,
-} from "recharts"
-import {
   Pagination,
   PaginationContent,
   PaginationItem,
@@ -30,13 +18,10 @@ import {
 } from "@/components/ui/pagination"
 import { useOrderList } from "@/lib/shopee/useOrderList"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { MapPin, MoreVertical } from "lucide-react"
+import { ChevronDown, CreditCard, DollarSign, MapPin, MoreVertical, Package, ShoppingCart, Truck, Users } from "lucide-react"
 import DialogTracking from "@/components/dialog-tracking"
 import { useSession } from "next-auth/react"
 import ModernGlassPreloader from "@/components/modern-glass-preloader"
-import { fetchShopPerformance } from "@/lib/shopee/api"
-import { mapPerformanceWithChange } from "@/lib/tiktok/mapPerformanceWithChange"
-import dayjs from "dayjs"
 import { StatsCard } from "@/components/stats-card"
 const Eye = ({ className }: { className?: string }) => (
   <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -84,117 +69,73 @@ const DownloadIcon = ({ className }: { className?: string }) => (
   </svg>
 )
 
-const TrendingUpIcon = ({ className }: { className?: string }) => (
-  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-  </svg>
-)
 
-const StarIcon = ({ className }: { className?: string }) => (
-  <svg className={className} fill="currentColor" stroke="currentColor" viewBox="0 0 24 24">
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth={2}
-      d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"
-    />
-  </svg>
-)
-
-const ShoppingBagIcon = ({ className }: { className?: string }) => (
-  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-  </svg>
-)
-
-const PackageIcon = ({ className }: { className?: string }) => (
-  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth={2}
-      d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
-    />
-  </svg>
-)
-
-// Sample data untuk Shopee
-const shopeeSalesData = [
-  { date: "2024-01-01", sales: 2400, orders: 45, rating: 4.8, visitors: 1200 },
-  { date: "2024-01-02", sales: 2800, orders: 52, rating: 4.7, visitors: 1350 },
-  { date: "2024-01-03", sales: 1900, orders: 38, rating: 4.9, visitors: 980 },
-  { date: "2024-01-04", sales: 3200, orders: 61, rating: 4.8, visitors: 1580 },
-  { date: "2024-01-05", sales: 3600, orders: 68, rating: 4.9, visitors: 1720 },
-  { date: "2024-01-06", sales: 2900, orders: 55, rating: 4.7, visitors: 1450 },
-  { date: "2024-01-07", sales: 3800, orders: 72, rating: 4.8, visitors: 1890 },
-]
-
-
-const categoryPerformance = [
-  { category: "Electronics", sales: 4500, orders: 89 },
-  { category: "Fashion", sales: 6200, orders: 124 },
-  { category: "Home & Living", sales: 3800, orders: 76 },
-  { category: "Beauty", sales: 2900, orders: 58 },
-]
-
+export interface MonthlyStats {
+  total_orders: number;
+  customers: number;
+  sold: number;
+  gmv: number;
+}
+export interface ShopeeStatsResponse {
+  this_month: MonthlyStats;
+  last_month: MonthlyStats;
+}
 export default function ShopeePage() {
   const [searchTerm, setSearchTerm] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
   const [categoryFilter, setCategoryFilter] = useState("all")
   const [openDialog, setOpenDialog] = useState(false)
   const [product, setProduct] = useState<string>("")
+  const [stats, setStats] = useState<ShopeeStatsResponse | null>(null)
   const [serialNumber, setSerialNumber] = useState<string>("")
   const [carrier, setCarrier] = useState<string>("")
   const { data: session, status } = useSession();
-
-  // const filteredProducts = shopeeProducts.filter((product) => {
-  //   const matchesSearch =
-  //     product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-  //     product.sku.toLowerCase().includes(searchTerm.toLowerCase())
-  //   const matchesStatus = statusFilter === "all" || product.status === statusFilter
-  //   const matchesCategory = categoryFilter === "all" || product.category === categoryFilter
-  //   return matchesSearch && matchesStatus && matchesCategory
-  // })
-  const [tableLoading, setTableLoading] = useState(false);
-  const [statsNow, setStatsNow] = useState<any[]>([]);
+  const api = process.env.NEXT_PUBLIC_API_URL
+  const [pageSize, setPageSize] = useState(5)
   const [loadStatsNow, setLoadStatsNow] = useState<boolean>(true)
   const [loadStatsPrev, setLoadStatsPrev] = useState<boolean>(true)
-  async function loadStats(startNow: string, endNow: string, startPrev: string, endPrev: string) {
+  async function loadStats() {
     if (!session?.user?.accessToken) return
-    setTableLoading(true)
 
     try {
-      const [nowRes, prevRes] = await Promise.all([
-        fetchShopPerformance(startNow, endNow, session.user.accessToken),
-        fetchShopPerformance(startPrev, endPrev, session.user.accessToken)
-      ])
-
-      const mapped = mapPerformanceWithChange(nowRes, prevRes)
-      setStatsNow(mapped)
+      const res = await fetch(`${api}/shopee/shop/performance`, {
+        headers: {
+          Authorization: `Bearer ${session?.user?.accessToken}`,
+          "Content-Type": "application/json",
+        },
+      })
+      const data = await res.json()
+      setStats(data)
       setLoadStatsNow(false)
       setLoadStatsPrev(false)
     } catch (err) {
       console.log(err)
-    } finally {
-      setTableLoading(false)
     }
   }
-  const { page, hasMore, loadOrders, loading, error, dataDetail } = useOrderList(10, session?.user?.accessToken ?? "")
+
+  const { page, hasMore, loadOrders, loading, error, dataDetail } = useOrderList(pageSize, session?.user?.accessToken ?? "", statusFilter)
+  const filteredData = dataDetail.filter((order: any) => {
+    const term = searchTerm.toLowerCase();
+
+    // cek jika search kosong => tampilkan semua
+    if (!term) return true;
+
+    return (
+      order.order_sn.toLowerCase().includes(term) || // cari di Order ID
+      order.item_list[0]?.item_name.toLowerCase().includes(term) || // cari di nama produk
+      order.payment_method?.toLowerCase().includes(term) || // cari di metode bayar
+      String(order.total_amount).includes(term) // cari di harga
+    );
+  });
   const handleOpenDialog = (product: string, serialNumber: string, carrier: string) => {
     setOpenDialog(true)
     setProduct(product)
     setSerialNumber(serialNumber)
     setCarrier(carrier)
   }
-  const startThisMonth = dayjs().startOf("month").format("YYYY-MM-DD");
-  const endThisMonth = dayjs().endOf("month").format("YYYY-MM-DD");
-
-  // Bulan lalu
-  const startLastMonth = dayjs().subtract(1, "month").startOf("month").format("YYYY-MM-DD");
-  const endLastMonth = dayjs().subtract(1, "month").endOf("month").format("YYYY-MM-DD");
   useEffect(() => {
     if (session?.user?.accessToken != undefined) {
-      loadStats(startThisMonth, endThisMonth, startLastMonth, endLastMonth)
+      loadStats()
 
     }
   }, [status, session?.user?.accessToken]);
@@ -215,7 +156,7 @@ export default function ShopeePage() {
 
       {/* Shopee Metrics */}
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-        {statsNow.length === 0 && loadStatsNow ? (
+        {!stats && loadStatsNow ? (
           // tampilkan skeleton card dummy
           Array.from({ length: 4 }).map((_, index) => (
             <StatsCard
@@ -236,14 +177,102 @@ export default function ShopeePage() {
             />
           ))
         ) : (
-          statsNow.map((stat, index) => (
-            <StatsCard key={stat.title} stat={stat} index={index} />
-          ))
+          <>
+            <StatsCard index={1} stat={{
+              title: "Total Order",
+              value: stats?.this_month.total_orders ?? 0,
+              change: (() => {
+                const current = stats?.this_month.total_orders ?? 0
+                const prev = stats?.last_month.total_orders ?? 0
+                if (prev === 0) {
+                  return current > 0 ? "+100%" : "0%"
+                }
+                const percent = ((current - prev) / prev) * 100
+                return `${percent > 0 ? "+" : ""}${percent.toFixed(1)}%`
+              })(),
+              changeType:
+                (stats?.this_month.total_orders ?? 0) >= (stats?.last_month.total_orders ?? 0)
+                  ? "increase"
+                  : "decrease",
+              icon: ShoppingCart,
+              bgGradient: "bg-gradient-to-br from-blue-50 to-indigo-50",
+              iconBg: "bg-gradient-to-br from-blue-500 to-indigo-500",
+              iconColor: "text-white",
+              borderColor: "border-blue-200",
+            }} />
+            <StatsCard index={1} stat={{
+              title: "Total GMV",
+              value: `Rp ${Number(stats?.this_month.gmv).toLocaleString("id-ID")}`,
+              change: (() => {
+                const current = stats?.this_month.gmv ?? 0
+                const prev = stats?.last_month.gmv ?? 0
+                if (prev === 0) {
+                  return current > 0 ? "+100%" : "0%"
+                }
+                const percent = ((current - prev) / prev) * 100
+                return `${percent > 0 ? "+" : ""}${percent.toFixed(1)}%`
+              })(),
+              changeType:
+                (stats?.this_month.gmv ?? 0) >= (stats?.last_month.gmv ?? 0)
+                  ? "increase"
+                  : "decrease",
+              icon: DollarSign,
+              bgGradient: "bg-gradient-to-br from-emerald-50 to-teal-50",
+              iconBg: "bg-gradient-to-br from-emerald-500 to-teal-500",
+              iconColor: "text-white",
+              borderColor: "border-emerald-200",
+            }} />
+            <StatsCard index={1} stat={{
+              title: "Produk Terjual",
+              value: stats?.this_month.sold ?? 0,
+              change: (() => {
+                const current = stats?.this_month.sold ?? 0
+                const prev = stats?.last_month.sold ?? 0
+                if (prev === 0) {
+                  return current > 0 ? `+100%` : "0%"
+                }
+                const percent = ((current - prev) / prev) * 100
+                return `${percent > 0 ? "+" : ""}${percent.toFixed(1)}%`
+              })(),
+              changeType:
+                (stats?.this_month.sold ?? 0) >= (stats?.last_month.sold ?? 0)
+                  ? "increase"
+                  : "decrease",
+              icon: Package,
+              bgGradient: "bg-gradient-to-br from-orange-50 to-amber-50",
+              iconBg: "bg-gradient-to-br from-orange-500 to-amber-500",
+              iconColor: "text-white",
+              borderColor: "border-orange-200",
+            }} />
+            <StatsCard index={1} stat={{
+              title: "Pelanggan",
+              value: stats?.this_month.customers ?? 0,
+              change: (() => {
+                const current = stats?.this_month.customers ?? 0
+                const prev = stats?.last_month.customers ?? 0
+                if (prev === 0) {
+                  return current > 0 ? "+100%" : "0%"
+                }
+                const percent = ((current - prev) / prev) * 100
+                return `${percent > 0 ? "+" : ""}${percent.toFixed(1)}%`
+              })(),
+              changeType:
+                (stats?.this_month.customers ?? 0) >= (stats?.last_month.customers ?? 0)
+                  ? "increase"
+                  : "decrease",
+              icon: Users,
+              bgGradient: "bg-gradient-to-br from-purple-50 to-violet-50",
+              iconBg: "bg-gradient-to-br from-purple-500 to-violet-500",
+              iconColor: "text-white",
+              borderColor: "border-purple-200",
+            }} />
+
+          </>
         )}
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-2">
-        {/* Sales Trend */}
+      {/* <div className="grid gap-6 lg:grid-cols-2">
+        
         <Card className="lg:col-span-1 pb-5 py-0 overflow-hidden border shadow-lg bg-white hover:shadow-xl transition-all duration-300">
           <CardHeader className="bg-gray-50 py-5 rounded-t-lg border-b">
             <CardTitle className="text-xl font-bold text-slate-900">Tren Penjualan Shopee (7 Hari Terakhir)</CardTitle>
@@ -303,7 +332,7 @@ export default function ShopeePage() {
           </CardContent>
         </Card>
 
-        {/* Category Performance */}
+        
         <Card className="border pb-5 py-0 overflow-hidden shadow-lg bg-white hover:shadow-xl transition-all duration-300">
           <CardHeader className="bg-gray-50 py-5 rounded-t-lg border-b">
             <CardTitle className="text-xl font-bold text-slate-900">Performa per Kategori</CardTitle>
@@ -339,7 +368,7 @@ export default function ShopeePage() {
             </ChartContainer>
           </CardContent>
         </Card>
-      </div>
+      </div> */}
 
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Platform Distribution */}
@@ -422,11 +451,15 @@ export default function ShopeePage() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Semua Status</SelectItem>
-                  <SelectItem value="active">Aktif</SelectItem>
-                  <SelectItem value="out_of_stock">Stok Habis</SelectItem>
+                  <SelectItem value="UNPAID">Belum Dibayar</SelectItem>
+                  <SelectItem value="READY_TO_SHIP">Siap Dikirim</SelectItem>
+                  <SelectItem value="SHIPPED">Dikirim</SelectItem>
+                  <SelectItem value="COMPLETED">Selesai</SelectItem>
+                  <SelectItem value="CANCELLED">Dibatalkan</SelectItem>
+                  <SelectItem value="TO_CONFIRM_RECEIVE">Menunggu Konfirmasi</SelectItem>
                 </SelectContent>
               </Select>
-              <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+              {/* <Select value={categoryFilter} onValueChange={setCategoryFilter}>
                 <SelectTrigger className="w-full md:w-[180px]">
                   <SelectValue placeholder="Filter Kategori" />
                 </SelectTrigger>
@@ -437,142 +470,347 @@ export default function ShopeePage() {
                   <SelectItem value="Home & Living">Home & Living</SelectItem>
                   <SelectItem value="Beauty">Beauty</SelectItem>
                 </SelectContent>
-              </Select>
+              </Select> */}
             </div>
-            <Button variant="outline">
-              <FilterIcon className="mr-2 h-4 w-4" />
-              Filter Lainnya
-            </Button>
           </div>
 
           {/* Table */}
-          <div className="rounded-md border overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow className="bg-gray-50">
-                  <TableHead className="w-[60px] text-center">No</TableHead>
-                  <TableHead>Order SN</TableHead>
-                  <TableHead>Produk</TableHead>
-                  {/* <TableHead>SKU</TableHead> */}
-                  <TableHead>Total Harga</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Metode Bayar</TableHead>
-                  {/* <TableHead>No. Resi</TableHead> */}
-                  <TableHead className="text-center w-auto">Aksi</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {!loading && dataDetail.map((order, idx) => (
-                  <TableRow key={order.order_sn} className={idx % 2 === 0 ? "bg-white" : "bg-gray-50/70"}>
-                    <TableCell className="text-center font-medium">
-                      {(page - 1) * 5 + idx + 1}
-                    </TableCell>
-                    <TableCell className="font-medium">{order.order_sn}</TableCell>
-                    <TableCell>{order.item_list[0].item_name}</TableCell>
-                    <TableCell className="font-semibold text-emerald-600">Rp {Number(order.total_amount).toLocaleString("id-ID")}</TableCell>
-                    <TableCell>
-                      <Badge className={statusColorMap[order.order_status] || "bg-gray-400 text-white"}>
-                        {order.order_status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>{order.payment_method}</TableCell>
-                    {/* <TableCell>
-                      {order.tracking_number ? order.tracking_number : "-"}
-                    </TableCell> */}
-                    <TableCell className="text-center">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon" className="h-8 w-8 p-0">
-                            <MoreVertical className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuLabel>Aksi</DropdownMenuLabel>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem onClick={() => console.log("Detail")}>
-                            <Eye className="mr-2 h-4 w-4" /> Detail
-                          </DropdownMenuItem>
-                          {order.package_list[0].package_number && (
-                            <DropdownMenuItem onClick={() => handleOpenDialog(order.item_list[0].item_name, order.order_sn, order.shipping_carrier)}>
-                              <MapPin className="mr-2 h-4 w-4" /> Lacak
-                            </DropdownMenuItem>
-                          )}
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </TableCell>
+          <>
+            {/* Desktop Table View */}
+            <div className="hidden lg:block rounded-md border overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow className="bg-gray-50">
+                    <TableHead className="w-[60px] text-center">No</TableHead>
+                    <TableHead>Order SN</TableHead>
+                    <TableHead>Produk</TableHead>
+                    <TableHead>Total Harga</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Metode Bayar</TableHead>
+                    <TableHead className="text-center w-auto">Aksi</TableHead>
                   </TableRow>
-                ))}
-                {loading && (
-                  <TableRow>
-                    <TableCell colSpan={8} className="text-center py-6">
-                      <div className="flex items-center justify-center gap-2 text-muted-foreground">
-                        <svg
-                          className="animate-spin h-5 w-5 text-muted-foreground"
-                          xmlns="http://www.w3.org/2000/svg"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                        >
-                          <circle
-                            className="opacity-25"
-                            cx="12"
-                            cy="12"
-                            r="10"
+                </TableHeader>
+                <TableBody>
+                  {!loading && filteredData.length > 0 ? filteredData.map((order: any, idx: number) => (
+                    <TableRow key={order.order_sn} className={idx % 2 === 0 ? "bg-white" : "bg-gray-50/70"}>
+                      <TableCell className="text-center font-medium">
+                        {(page - 1) * pageSize + idx + 1}
+                      </TableCell>
+                      <TableCell className="font-medium">{order.order_sn}</TableCell>
+                      <TableCell>{order.item_list[0].item_name}</TableCell>
+                      <TableCell className="font-semibold text-emerald-600">
+                        Rp {Number(order.total_amount).toLocaleString("id-ID")}
+                      </TableCell>
+                      <TableCell>
+                        <Badge className={statusColorMap[order.order_status] || "bg-gray-400 text-white"}>
+                          {order.order_status}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>{order.payment_method}</TableCell>
+                      <TableCell className="text-center">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon" className="h-8 w-8 p-0">
+                              <MoreVertical className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuLabel>Aksi</DropdownMenuLabel>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem onClick={() => console.log("Detail")}>
+                              <Eye className="mr-2 h-4 w-4" /> Detail
+                            </DropdownMenuItem>
+                            {order.package_list[0]?.package_number && (
+                              <DropdownMenuItem
+                                onClick={() => handleOpenDialog(
+                                  order.item_list[0].item_name,
+                                  order.order_sn,
+                                  order.shipping_carrier
+                                )}
+                              >
+                                <MapPin className="mr-2 h-4 w-4" /> Lacak
+                              </DropdownMenuItem>
+                            )}
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
+                    </TableRow>
+                  )) : (<TableRow>
+                    <TableCell colSpan={8} className="h-64">
+                      <div className="flex flex-col items-center justify-center text-gray-400">
+                        <div className="w-20 h-20 mb-4 rounded-full bg-gray-100 flex items-center justify-center">
+                          <svg
+                            className="w-10 h-10 text-gray-300"
+                            fill="none"
                             stroke="currentColor"
-                            strokeWidth="4"
-                          />
-                          <path
-                            className="opacity-75"
-                            fill="currentColor"
-                            d="M4 12a8 8 0 018-8v8H4z"
-                          />
-                        </svg>
-                        <span>Memuat data...</span>
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                            />
+                          </svg>
+                        </div>
+                        <p className="text-lg font-semibold text-gray-500 mb-2">Tidak Ada Data</p>
+                        <p className="text-sm text-gray-400">Belum ada pesanan yang tersedia</p>
                       </div>
                     </TableCell>
-                  </TableRow>
-                )}
-                {error && (
-                  <TableRow>
-                    <TableCell colSpan={2} className="text-red-500">
-                      {error}
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </div>
+                  </TableRow>)}
+                  {loading && (
+                    <TableRow>
+                      <TableCell colSpan={7} className="text-center py-6">
+                        <div className="flex items-center justify-center gap-2 text-muted-foreground">
+                          <svg
+                            className="animate-spin h-5 w-5 text-muted-foreground"
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                          >
+                            <circle
+                              className="opacity-25"
+                              cx="12"
+                              cy="12"
+                              r="10"
+                              stroke="currentColor"
+                              strokeWidth="4"
+                            />
+                            <path
+                              className="opacity-75"
+                              fill="currentColor"
+                              d="M4 12a8 8 0 018-8v8H4z"
+                            />
+                          </svg>
+                          <span>Memuat data...</span>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  )}
+                  {error && (
+                    <TableRow>
+                      <TableCell colSpan={7} className="text-red-500 text-center py-4">
+                        {error}
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            </div>
+
+            {/* Mobile & Tablet Card View */}
+            <div className="lg:hidden space-y-4">
+              {!loading && filteredData.map((order: any, idx: number) => (
+                <div
+                  key={order.order_sn}
+                  className="bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow"
+                >
+                  {/* Card Header */}
+                  <div className="px-4 py-3 bg-gray-50 border-b border-gray-200 flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className="h-8 w-8 bg-blue-100 rounded-full flex items-center justify-center text-sm font-bold text-blue-600">
+                        {(page - 1) * pageSize + idx + 1}
+                      </div>
+                      <div>
+                        <p className="text-xs text-gray-500 font-medium">Order SN</p>
+                        <p className="text-sm font-semibold text-gray-900">{order.order_sn}</p>
+                      </div>
+                    </div>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon" className="h-8 w-8 p-0">
+                          <MoreVertical className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuLabel>Aksi</DropdownMenuLabel>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem onClick={() => console.log("Detail")}>
+                          <Eye className="mr-2 h-4 w-4" /> Detail
+                        </DropdownMenuItem>
+                        {order.package_list[0]?.package_number && (
+                          <DropdownMenuItem
+                            onClick={() => handleOpenDialog(
+                              order.item_list[0].item_name,
+                              order.order_sn,
+                              order.shipping_carrier
+                            )}
+                          >
+                            <MapPin className="mr-2 h-4 w-4" /> Lacak
+                          </DropdownMenuItem>
+                        )}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+
+                  {/* Card Body */}
+                  <div className="p-4 space-y-3">
+                    {/* Product Info */}
+                    <div className="flex items-start gap-3">
+                      <div className="h-10 w-10 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <Package className="h-5 w-5 text-purple-600" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs text-gray-500 font-medium mb-1">Produk</p>
+                        <p className="text-sm font-medium text-gray-900 line-clamp-2">
+                          {order.item_list[0].item_name}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Price & Status */}
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <p className="text-xs text-gray-500 font-medium mb-1">Total Harga</p>
+                        <p className="text-base font-bold text-emerald-600">
+                          Rp {Number(order.total_amount).toLocaleString("id-ID")}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-gray-500 font-medium mb-1">Status</p>
+                        <Badge className={statusColorMap[order.order_status] || "bg-gray-400 text-white"}>
+                          {order.order_status}
+                        </Badge>
+                      </div>
+                    </div>
+
+                    {/* Payment Method */}
+                    <div className="flex items-center gap-2 pt-2 border-t border-gray-100">
+                      <CreditCard className="h-4 w-4 text-gray-400" />
+                      <div className="flex-1">
+                        <p className="text-xs text-gray-500">Metode Pembayaran</p>
+                        <p className="text-sm font-medium text-gray-900">{order.payment_method}</p>
+                      </div>
+                    </div>
+
+                    {/* Tracking Info (if available) */}
+                    {order.package_list[0]?.package_number && (
+                      <div className="flex items-center gap-2 pt-2 border-t border-gray-100">
+                        <Truck className="h-4 w-4 text-gray-400" />
+                        <div className="flex-1">
+                          <p className="text-xs text-gray-500">Kurir</p>
+                          <p className="text-sm font-medium text-gray-900">{order.shipping_carrier}</p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+
+              {/* Loading State - Mobile */}
+              {loading && (
+                <div className="bg-white border border-gray-200 rounded-lg p-8">
+                  <div className="flex flex-col items-center justify-center gap-3 text-muted-foreground">
+                    <svg
+                      className="animate-spin h-8 w-8 text-muted-foreground"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      />
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8v8H4z"
+                      />
+                    </svg>
+                    <span className="text-sm font-medium">Memuat data...</span>
+                  </div>
+                </div>
+              )}
+
+              {/* Error State - Mobile */}
+              {error && (
+                <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                  <p className="text-sm text-red-600 text-center font-medium">{error}</p>
+                </div>
+              )}
+
+              {/* Empty State - Mobile */}
+              {!loading && !error && dataDetail.length === 0 && (
+                <div className="bg-white border border-gray-200 rounded-lg p-8">
+                  <div className="flex flex-col items-center justify-center gap-3 text-gray-500">
+                    <Package className="h-12 w-12 text-gray-400" />
+                    <p className="text-sm font-medium">Tidak ada data pesanan</p>
+                  </div>
+                </div>
+              )}
+            </div>
+          </>
 
           {/* Pagination pakai shadcn */}
-          <div className="mt-4 flex justify-center">
-            <Pagination>
-              <PaginationContent>
-                <PaginationItem>
-                  <PaginationPrevious
-                    onClick={() => loadOrders(page - 1)}
-                    aria-disabled={page === 1 || loading}
-                  />
-                </PaginationItem>
-
-                {[...Array(page + (hasMore ? 1 : 0))].map((_, i) => (
-                  <PaginationItem key={i}>
-                    <PaginationLink
-                      isActive={page === i + 1}
-                      onClick={() => loadOrders(i + 1)}
-                    >
-                      {i + 1}
-                    </PaginationLink>
-                  </PaginationItem>
-                ))}
-
-                <PaginationItem>
-                  <PaginationNext
-                    onClick={() => loadOrders(page + 1)}
-                    aria-disabled={!hasMore || loading}
-                  />
-                </PaginationItem>
-              </PaginationContent>
-            </Pagination>
+          <div className="mt-6 pt-6 border-t border-gray-200">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-gray-700">Data per halaman:</span>
+                <div className="relative">
+                  <select
+                    value={pageSize}
+                    onChange={(e) => {
+                      setPageSize(Number(e.target.value))
+                    }}
+                    className="px-3 py-2 pr-8 border border-gray-300 rounded-lg appearance-none focus:ring-2 focus:ring-black focus:border-transparent bg-white text-sm"
+                  >
+                    <option value={5}>5</option>
+                    <option value={10}>10</option>
+                    <option value={25}>25</option>
+                    <option value={50}>50</option>
+                    <option value={100}>100</option>
+                  </select>
+                  <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none" size={16} />
+                </div>
+              </div>
+              <span className="text-sm text-gray-700 w-auto">
+                Halaman {page}
+              </span>
+              <div>
+                <Pagination>
+                  <PaginationContent>
+                    <PaginationItem>
+                      <PaginationPrevious
+                        onClick={() => {
+                          if (page > 1 && !loading) {
+                            loadOrders(page - 1);
+                          }
+                        }}
+                        aria-disabled={page === 1 || loading}
+                        className={`
+                        ${page === 1 || loading
+                            ? 'opacity-50 cursor-not-allowed pointer-events-none bg-gray-100 text-gray-400 border-gray-200'
+                            : 'cursor-pointer hover:bg-gray-50 border-gray-300 text-gray-700 bg-white'
+                          }
+                      `}
+                      />
+                    </PaginationItem>
+                    <PaginationItem>
+                      <PaginationNext
+                        onClick={() => {
+                          if (hasMore && !loading) {
+                            loadOrders(page + 1);
+                          }
+                        }}
+                        aria-disabled={!hasMore || loading}
+                        className={`
+                        ${!hasMore || loading
+                            ? 'opacity-50 cursor-not-allowed pointer-events-none bg-gray-100 text-gray-400 border-gray-200'
+                            : 'cursor-pointer hover:bg-gray-800 bg-gray-900 text-white border-gray-900'
+                          }
+                      `}
+                      />
+                    </PaginationItem>
+                  </PaginationContent>
+                </Pagination>
+              </div>
+            </div>
           </div>
+
         </CardContent>
       </Card>
       <DialogTracking token={session?.user?.accessToken ?? ""} setTrackOpen={setOpenDialog} trackOpen={openDialog} product={product} serialNumber={serialNumber} carrier={carrier} />

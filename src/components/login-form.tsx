@@ -4,27 +4,40 @@ import type React from "react"
 import { useState } from "react"
 import { signIn } from "next-auth/react"
 import { useRouter } from "next/navigation"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Eye, EyeOff, Mail, Lock, Sparkles } from "lucide-react"
+import { ShoppingCart, Loader2 } from "lucide-react"
+import { useForm } from "react-hook-form"
+import { z } from "zod"
+import { zodResolver } from "@hookform/resolvers/zod"
+
+// === Schema Validasi Zod ===
+const loginSchema = z.object({
+  username: z.string().min(3, "Username minimal 3 karakter"),
+  password: z.string().min(3, "Password minimal 6 karakter"),
+})
+
+type LoginFormValues = z.infer<typeof loginSchema>
 
 export function LoginForm() {
   const [showPassword, setShowPassword] = useState(false)
-  const [username, setUsername] = useState("")
-  const [password, setPassword] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+  // === React Hook Form dengan Zod ===
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<LoginFormValues>({
+    resolver: zodResolver(loginSchema),
+  })
+
+  const onSubmit = async (data: LoginFormValues) => {
     setIsLoading(true)
 
     const result = await signIn("credentials", {
       redirect: false,
-      username,
-      password,
+      username: data.username,
+      password: data.password,
     })
 
     setIsLoading(false)
@@ -33,66 +46,103 @@ export function LoginForm() {
       console.error("Login failed:", result.error)
       alert("Login gagal: " + result.error)
     } else {
-      router.push("/admin") // redirect setelah login
+      router.push("/admin")
     }
   }
 
   return (
-    <Card className="w-full shadow-2xl  bg-white backdrop-blur-xl border border-gray-200">
-      <CardHeader className="space-y-1 pb-6 relative">
-        <div className="absolute top-4 right-4 opacity-20">
-          <Sparkles className="h-6 w-6 text-gray-400 animate-pulse" />
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 flex items-center justify-center p-4">
+      <div className="w-full max-w-md">
+        {/* Logo */}
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-2xl mb-4 shadow-lg">
+            <ShoppingCart className="w-8 h-8 text-white" />
+          </div>
+          <h1 className="text-3xl font-bold text-gray-900">Echo</h1>
         </div>
-        <CardTitle className="text-2xl font-bold text-center text-black mb-2">Login</CardTitle>
-        <CardDescription className="text-center text-gray-600">Masuk ke akun Anda</CardDescription>
-      </CardHeader>
 
-      <CardContent className="space-y-6">
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="space-y-2">
-            <Label htmlFor="Username" className="text-sm font-semibold text-gray-700 flex items-center gap-2">
-              <Mail className="h-4 w-4 text-blue-500" />
-              Username Address
-            </Label>
-            <Input
-              id="Username"
-              // type="Username"
-              placeholder="Enter your Username"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              required
-            />
+        {/* Card */}
+        <div className="bg-white rounded-3xl shadow-xl p-8 border border-gray-100">
+          <div className="mb-6">
+            <h2 className="text-2xl font-bold text-gray-900">Selamat Datang</h2>
+            <p className="text-gray-500 mt-1">Masuk ke dashboard admin Anda</p>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="password" className="text-sm font-semibold text-gray-700 flex items-center gap-2">
-              <Lock className="h-4 w-4 text-blue-500" />
-              Password
-            </Label>
-            <div className="relative group">
-              <Input
-                id="password"
-                type={showPassword ? "text" : "password"}
-                placeholder="Enter your password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+            {/* Username */}
+            <div>
+              <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-2">
+                Username
+              </label>
+              <input
+                id="username"
+                type="text"
+                {...register("username")}
+                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition"
+                placeholder="username..."
               />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-4 top-1/2 -translate-y-1/2 h-5 w-5"
-              >
-                {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-              </button>
+              {errors.username && (
+                <p className="text-sm text-red-500 mt-1">{errors.username.message}</p>
+              )}
             </div>
-          </div>
 
-          <Button type="submit" className="w-full h-14 bg-black text-white" disabled={isLoading}>
-            {isLoading ? "Signing in..." : "Sign In"}
-          </Button>
-        </form>
-      </CardContent>
-    </Card>
+            {/* Password */}
+            <div>
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
+                Password
+              </label>
+              <div className="relative">
+                <input
+                  id="password"
+                  type={showPassword ? "text" : "password"}
+                  {...register("password")}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition"
+                  placeholder="••••••••"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                >
+                  {showPassword ? "🙈" : "👁️"}
+                </button>
+              </div>
+              {errors.password && (
+                <p className="text-sm text-red-500 mt-1">{errors.password.message}</p>
+              )}
+            </div>
+
+            {/* Remember Me */}
+            <div className="flex items-center justify-between">
+              <label className="flex items-center">
+                <input
+                  type="checkbox"
+                  className="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+                />
+                <span className="ml-2 text-sm text-gray-600">Ingat saya</span>
+              </label>
+            </div>
+
+            {/* Button */}
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-3 rounded-xl font-medium hover:from-indigo-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition shadow-lg shadow-indigo-500/30 flex items-center justify-center"
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 className="animate-spin w-5 h-5 mr-2" /> Loading...
+                </>
+              ) : (
+                "Masuk"
+              )}
+            </button>
+          </form>
+        </div>
+        <p className="text-center text-sm text-gray-500 mt-6">
+          © 2025 Echo. Platform penjualan TikTok & Shopee
+        </p>
+      </div>
+    </div>
   )
 }

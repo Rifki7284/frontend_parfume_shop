@@ -4,7 +4,9 @@ import { MobileAdminSidebar } from "./admin-sidebar"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { useState, useEffect } from "react"
+import { VisuallyHidden } from "@radix-ui/react-visually-hidden"
 import { signOut } from "next-auth/react";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "./ui/dialog"
 const BellIcon = () => (
   <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
     <path
@@ -90,22 +92,27 @@ const Clock = () => {
 }
 
 
-const LogoutModal = ({
+export function LogoutModal({
   isOpen,
   onClose,
   onConfirm,
-}: { isOpen: boolean; onClose: () => void; onConfirm: () => void }) => {
-  if (!isOpen) return null
-
+}: { isOpen: boolean; onClose: () => void; onConfirm: () => void }) {
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div className="fixed inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative bg-white rounded-lg shadow-xl p-6 w-full max-w-md mx-4">
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent>
+        <DialogHeader>
+          <VisuallyHidden>
+            <DialogTitle>Konfirmasi Logout</DialogTitle>
+          </VisuallyHidden>
+          <DialogDescription>
+            Apakah Anda yakin ingin keluar dari sistem admin?
+          </DialogDescription>
+        </DialogHeader>
+
         <div className="flex items-center justify-center w-12 h-12 mx-auto mb-4 bg-red-100 rounded-full">
           <LogOutIcon />
         </div>
-        <h3 className="text-lg font-semibold text-center text-gray-900 mb-2">Konfirmasi Logout</h3>
-        <p className="text-sm text-gray-600 text-center mb-6">Apakah Anda yakin ingin keluar dari sistem admin?</p>
+
         <div className="flex space-x-3">
           <Button variant="outline" className="flex-1 bg-transparent" onClick={onClose}>
             Batal
@@ -114,8 +121,8 @@ const LogoutModal = ({
             Ya, Logout
           </Button>
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   )
 }
 
