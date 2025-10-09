@@ -13,6 +13,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 const loginSchema = z.object({
   username: z.string().min(3, "Username minimal 3 karakter"),
   password: z.string().min(3, "Password minimal 6 karakter"),
+  remember: z.boolean().optional(), // ✅ tambahkan remember
 })
 
 type LoginFormValues = z.infer<typeof loginSchema>
@@ -38,6 +39,7 @@ export function LoginForm() {
       redirect: false,
       username: data.username,
       password: data.password,
+      remember: data.remember ? "true" : "false", // ✅ kirim ke backend
     })
 
     setIsLoading(false)
@@ -49,6 +51,7 @@ export function LoginForm() {
       router.push("/admin")
     }
   }
+
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 flex items-center justify-center p-4">
@@ -117,6 +120,7 @@ export function LoginForm() {
               <label className="flex items-center">
                 <input
                   type="checkbox"
+                  {...register("remember")}
                   className="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
                 />
                 <span className="ml-2 text-sm text-gray-600">Ingat saya</span>

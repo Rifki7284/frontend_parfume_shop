@@ -9,8 +9,10 @@ declare module "next-auth" {
       role: string;
       accessToken: string;
       refreshToken: string;
+      remember: boolean; // ✅ tambahkan ini
     } & DefaultSession["user"];
     error?: string;
+    maxAge?: number; // opsional, karena kita set di session callback
   }
 
   interface User extends DefaultUser {
@@ -21,6 +23,8 @@ declare module "next-auth" {
     accessToken: string;
     refreshToken: string;
     accessTokenExpires: number;
+    remember: boolean; // ✅ tambahkan ini
+    refreshExpiresAt: number; // ✅ untuk batas hidup refresh token
   }
 }
 
@@ -33,6 +37,8 @@ declare module "next-auth/jwt" {
     accessToken: string;
     refreshToken: string;
     accessTokenExpires: number;
+    remember: boolean; // ✅ tambahkan ini
+    refreshExpiresAt: number; // ✅ tambahkan ini juga
     error?: string;
   }
 }

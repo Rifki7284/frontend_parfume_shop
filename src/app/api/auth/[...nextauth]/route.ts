@@ -1,7 +1,9 @@
 import NextAuth, { AuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 
-// 🔄 helper untuk refresh token
+/* ============================================================
+   🔄 Helper: Refresh Token
+   ============================================================ */
 async function refreshAccessToken(token: any) {
   try {
     const res = await fetch("http://localhost:8000/o/token/", {
@@ -16,14 +18,13 @@ async function refreshAccessToken(token: any) {
     });
 
     if (!res.ok) throw new Error("Failed to refresh token");
-
     const data = await res.json();
 
     return {
       ...token,
       accessToken: data.access_token,
-      accessTokenExpires: Date.now() + data.expires_in * 1000, // simpan expired baru
-      refreshToken: data.refresh_token ?? token.refreshToken, // DOT kadang kasih refresh baru
+      accessTokenExpires: Date.now() + data.expires_in * 1000,
+      refreshToken: data.refresh_token ?? token.refreshToken,
     };
   } catch (error) {
     console.error("Error refreshing access token:", error);
@@ -31,6 +32,9 @@ async function refreshAccessToken(token: any) {
   }
 }
 
+/* ============================================================
+   ⚙️ NextAuth Config
+   ============================================================ */
 export const authOptions: AuthOptions = {
   providers: [
     CredentialsProvider({
@@ -38,6 +42,7 @@ export const authOptions: AuthOptions = {
       credentials: {
         username: { label: "Username", type: "text" },
         password: { label: "Password", type: "password" },
+        remember: { label: "Remember Me", type: "checkbox" },
       },
       async authorize(credentials) {
         if (!credentials?.username || !credentials?.password) return null;
@@ -50,7 +55,7 @@ export const authOptions: AuthOptions = {
             body: new URLSearchParams({
               username: credentials.username,
               password: credentials.password,
-              grant_type: "password", // ✅ typo diperbaiki (grand_type ❌ → grant_type ✅)
+              grant_type: "password",
               client_id: process.env.NEXT_PUBLIC_DJANGO_CLIENT_ID ?? "",
               client_secret: process.env.NEXT_PUBLIC_DJANGO_CLIENT_SECRET ?? "",
             }),
@@ -60,6 +65,13 @@ export const authOptions: AuthOptions = {
         if (!res.ok) return null;
         const data = await res.json();
 
+        const remember =
+          credentials.remember === "true" || credentials.remember === "on";
+
+        const refreshExpiresIn = data.refresh_expires_in
+          ? data.refresh_expires_in * 1000
+          : 30 * 24 * 60 * 60 * 1000; // default 30 hari
+
         return {
           id: data.user.id,
           username: data.user.username,
@@ -67,15 +79,20 @@ export const authOptions: AuthOptions = {
           role: data.user.is_staff ? "staff" : "user",
           accessToken: data.access_token,
           refreshToken: data.refresh_token,
-          accessTokenExpires: Date.now() + data.expires_in * 1000, // tambahin expired
+          accessTokenExpires: Date.now() + data.expires_in * 1000,
+          remember,
+          refreshExpiresAt: Date.now() + refreshExpiresIn,
         };
       },
     }),
   ],
 
+  /* ============================================================
+     🔐 JWT & Session Callbacks
+     ============================================================ */
   callbacks: {
     async jwt({ token, user }) {
-      // login awal
+      // Login pertama
       if (user) {
         token.id = user.id;
         token.role = user.role;
@@ -84,16 +101,27 @@ export const authOptions: AuthOptions = {
         token.accessToken = user.accessToken;
         token.refreshToken = user.refreshToken;
         token.accessTokenExpires = user.accessTokenExpires;
+        token.remember = user.remember;
+        token.refreshExpiresAt = user.refreshExpiresAt;
         return token;
       }
 
-      // kalau token masih valid → return langsung
+      // Kalau access token masih valid
       if (Date.now() < (token.accessTokenExpires as number)) {
         return token;
       }
 
-      // kalau expired → refresh
-      return await refreshAccessToken(token);
+      // Kalau expired dan remember aktif
+      if (token.remember) {
+        if (Date.now() < (token.refreshExpiresAt as number)) {
+          return await refreshAccessToken(token);
+        } else {
+          return { ...token, error: "RefreshTokenExpired" };
+        }
+      }
+
+      // Kalau tidak remember
+      return { ...token, error: "AccessTokenExpired" };
     },
 
     async session({ session, token }) {
@@ -104,17 +132,52 @@ export const authOptions: AuthOptions = {
         session.user.email = token.email as string;
         session.user.accessToken = token.accessToken as string;
         session.user.refreshToken = token.refreshToken as string;
+        session.user.remember = token.remember as boolean;
         (session as any).error = token.error;
       }
+
+      // Hitung durasi sesi
+      const defaultRememberAge = 30 * 24 * 60 * 60; // 30 hari (detik)
+      const rememberMaxAge =
+        token.refreshExpiresAt && token.refreshExpiresAt > Date.now()
+          ? Math.floor((token.refreshExpiresAt - Date.now()) / 1000)
+          : defaultRememberAge;
+
+      const maxAge = token.remember ? rememberMaxAge : 60 * 60; // 1 jam kalau tidak remember
+      session.maxAge = maxAge;
+
       return session;
     },
   },
 
+  /* ============================================================
+     📄 Custom Pages
+     ============================================================ */
   pages: {
-    signIn: "/", // pakai halaman login custom
+    signIn: "/", // halaman login
   },
+
+  /* ============================================================
+     🧩 Session & Cookie Settings
+     ============================================================ */
   session: {
     strategy: "jwt",
+    maxAge: 60 * 60, // fallback default (1 jam)
+  },
+
+  cookies: {
+    sessionToken: {
+      name:
+        process.env.NODE_ENV === "production"
+          ? "__Secure-next-auth.session-token"
+          : "next-auth.session-token", // ⬅️ perbaikan utama agar tidak error invalid prefix
+      options: {
+        httpOnly: true,
+        sameSite: "lax",
+        path: "/",
+        secure: process.env.NODE_ENV === "production",
+      },
+    },
   },
 };
 
