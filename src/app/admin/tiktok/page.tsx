@@ -249,7 +249,7 @@ export default function TikTokPage() {
   if (status == "loading") return <ModernGlassPreloader />;
   // if (status === "unauthenticated") return <p>Silakan login dulu</p>;
   return (
-    <div className="space-y-6 bg-white min-h-screen p-6">
+    <div className="space-y-6 bg-white min-h-screen p-6 dark:bg-gray-950">
       <div className="flex flex-col  gap-4 md:flex-row md:items-center md:justify-between">
         <div>
           <h1 className="text-3xl font-bold text-balance">Data Penjualan Tiktok</h1>
@@ -274,10 +274,10 @@ export default function TikTokPage() {
                 change: "0%",
                 changeType: "increase",
                 icon: () => <div />,
-                bgGradient: "bg-gradient-to-br from-gray-50 to-gray-100",
-                borderColor: "border-gray-200",
-                iconBg: "bg-gray-200",
-                iconColor: "text-gray-400",
+                bgGradient: "bg-gray-50 dark:bg-gray-800",
+                borderColor: "border-gray-200 dark:border-gray-700",
+                iconBg: "bg-gray-200 dark:bg-gray-700",
+                iconColor: "text-gray-400 dark:text-gray-500",
               }}
               index={index}
               loading={true}
@@ -302,10 +302,10 @@ export default function TikTokPage() {
                   ? "increase"
                   : "decrease",
               icon: ShoppingCart,
-              bgGradient: "bg-gradient-to-br from-blue-50 to-indigo-50",
-              iconBg: "bg-gradient-to-br from-blue-500 to-indigo-500",
+              bgGradient: "bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30",
+              iconBg: "bg-gradient-to-br from-blue-500 to-indigo-500 dark:from-blue-600 dark:to-indigo-600",
               iconColor: "text-white",
-              borderColor: "border-blue-200",
+              borderColor: "border-blue-200 dark:border-blue-800",
             }} />
             <StatsCard index={1} stat={{
               title: "Total GMV",
@@ -324,10 +324,10 @@ export default function TikTokPage() {
                   ? "increase"
                   : "decrease",
               icon: DollarSign,
-              bgGradient: "bg-gradient-to-br from-emerald-50 to-teal-50",
-              iconBg: "bg-gradient-to-br from-emerald-500 to-teal-500",
+              bgGradient: "bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-950/30 dark:to-teal-950/30",
+              iconBg: "bg-gradient-to-br from-emerald-500 to-teal-500 dark:from-emerald-600 dark:to-teal-600",
               iconColor: "text-white",
-              borderColor: "border-emerald-200",
+              borderColor: "border-emerald-200 dark:border-emerald-800",
             }} />
             <StatsCard index={1} stat={{
               title: "Produk Terjual",
@@ -346,10 +346,10 @@ export default function TikTokPage() {
                   ? "increase"
                   : "decrease",
               icon: Package,
-              bgGradient: "bg-gradient-to-br from-orange-50 to-amber-50",
-              iconBg: "bg-gradient-to-br from-orange-500 to-amber-500",
+              bgGradient: "bg-gradient-to-br from-orange-50 to-amber-50 dark:from-orange-950/30 dark:to-amber-950/30",
+              iconBg: "bg-gradient-to-br from-orange-500 to-amber-500 dark:from-orange-600 dark:to-amber-600",
               iconColor: "text-white",
-              borderColor: "border-orange-200",
+              borderColor: "border-orange-200 dark:border-orange-800",
             }} />
             <StatsCard index={1} stat={{
               title: "Pelanggan",
@@ -368,10 +368,10 @@ export default function TikTokPage() {
                   ? "increase"
                   : "decrease",
               icon: Users,
-              bgGradient: "bg-gradient-to-br from-purple-50 to-violet-50",
-              iconBg: "bg-gradient-to-br from-purple-500 to-violet-500",
+              bgGradient: "bg-gradient-to-br from-purple-50 to-violet-50 dark:from-purple-950/30 dark:to-violet-950/30",
+              iconBg: "bg-gradient-to-br from-purple-500 to-violet-500 dark:from-purple-600 dark:to-violet-600",
               iconColor: "text-white",
-              borderColor: "border-purple-200",
+              borderColor: "border-purple-200 dark:border-purple-800",
             }} />
 
           </>
@@ -454,17 +454,19 @@ export default function TikTokPage() {
       </div> */}
 
       {/* Products Table */}
-      <Card className="border  py-0 overflow-hidden shadow-lg bg-white hover:shadow-xl transition-all duration-300">
-        <CardHeader className="bg-gray-50 py-5 rounded-t-lg border-b">
-          <CardTitle className="text-xl font-bold text-slate-900">Daftar Pesanan TikTok</CardTitle>
-          <CardDescription className="text-slate-600">Kelola dan pantau status pesanan dari TikTok Shop</CardDescription>
+      <Card className="border border-slate-200 dark:border-slate-800 py-0 overflow-hidden shadow-lg bg-white dark:bg-slate-900 hover:shadow-xl transition-all duration-300">
+        <CardHeader className="bg-gray-50 dark:bg-slate-800 py-5 rounded-t-lg border-b border-slate-200 dark:border-slate-700">
+          <CardTitle className="text-xl font-bold text-slate-900 dark:text-white">
+            Daftar Pesanan TikTok
+          </CardTitle>
+          <CardDescription className="text-slate-600 dark:text-slate-400">
+            Kelola dan pantau status pesanan dari TikTok Shop
+          </CardDescription>
         </CardHeader>
-        <CardContent className=" pb-8">
+        <CardContent className="pb-8">
           {/* Filters */}
           <div className="flex flex-col gap-3 sm:gap-4 mb-6">
-            {/* Container untuk filter */}
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              {/* Left side - Search & Filter */}
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:flex-1">
                 {/* Search Input */}
                 <div className="relative w-full sm:w-auto sm:min-w-[250px] lg:min-w-[300px]">
@@ -473,325 +475,323 @@ export default function TikTokPage() {
                     placeholder="Cari produk atau pembeli..."
                     value={keyword}
                     onChange={(e) => setKeyword(e.target.value)}
-                    className="pl-8 w-full"
+                    className="pl-8 w-full bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400"
                   />
                 </div>
 
                 {/* Status Filter */}
                 <Select value={statusFilter} onValueChange={setStatusFilter}>
-                  <SelectTrigger className="w-full sm:w-[180px] lg:w-[200px]">
+                  <SelectTrigger className="w-full sm:w-[180px] lg:w-[200px] bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white">
                     <SelectValue placeholder="Filter Status" />
                   </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Semua Status</SelectItem>
-                    <SelectItem value="UNPAID">Belum Dibayar</SelectItem>
-                    <SelectItem value="ON_HOLD">Ditahan</SelectItem>
-                    <SelectItem value="AWAITING_SHIPMENT">Menunggu Dikirim</SelectItem>
-                    <SelectItem value="AWAITING_COLLECTION">Menunggu Diambil</SelectItem>
-                    <SelectItem value="IN_TRANSIT">Sedang Dikirim</SelectItem>
-                    <SelectItem value="DELIVERED">Terkirim</SelectItem>
-                    <SelectItem value="COMPLETED">Selesai</SelectItem>
-                    <SelectItem value="CANCELLED">Dibatalkan</SelectItem>
+                  <SelectContent className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
+                    <SelectItem value="all" className="text-slate-900 dark:text-white hover:bg-slate-100 dark:hover:bg-slate-700">Semua Status</SelectItem>
+                    <SelectItem value="UNPAID" className="text-slate-900 dark:text-white hover:bg-slate-100 dark:hover:bg-slate-700">Belum Dibayar</SelectItem>
+                    <SelectItem value="ON_HOLD" className="text-slate-900 dark:text-white hover:bg-slate-100 dark:hover:bg-slate-700">Ditahan</SelectItem>
+                    <SelectItem value="AWAITING_SHIPMENT" className="text-slate-900 dark:text-white hover:bg-slate-100 dark:hover:bg-slate-700">Menunggu Dikirim</SelectItem>
+                    <SelectItem value="AWAITING_COLLECTION" className="text-slate-900 dark:text-white hover:bg-slate-100 dark:hover:bg-slate-700">Menunggu Diambil</SelectItem>
+                    <SelectItem value="IN_TRANSIT" className="text-slate-900 dark:text-white hover:bg-slate-100 dark:hover:bg-slate-700">Sedang Dikirim</SelectItem>
+                    <SelectItem value="DELIVERED" className="text-slate-900 dark:text-white hover:bg-slate-100 dark:hover:bg-slate-700">Terkirim</SelectItem>
+                    <SelectItem value="COMPLETED" className="text-slate-900 dark:text-white hover:bg-slate-100 dark:hover:bg-slate-700">Selesai</SelectItem>
+                    <SelectItem value="CANCELLED" className="text-slate-900 dark:text-white hover:bg-slate-100 dark:hover:bg-slate-700">Dibatalkan</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
-
-              {/* Right side - bisa ditambahkan tombol action jika diperlukan */}
             </div>
           </div>
 
-          {/* Table */}
-          <>
-            {/* Desktop Table View */}
-            <div className="hidden lg:block rounded-lg border shadow-sm overflow-hidden">
-              <Table>
-                <TableHeader>
-                  <TableRow className="bg-gray-50">
-                    <TableHead className="w-[60px] text-center">No</TableHead>
-                    <TableHead>Order ID</TableHead>
-                    <TableHead>Produk</TableHead>
-                    <TableHead>Harga</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Metode Bayar</TableHead>
-                    <TableHead>No. Resi</TableHead>
-                    <TableHead className="text-center">Aksi</TableHead>
+          {/* Desktop Table View */}
+          <div className="hidden lg:block rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
+            <Table>
+              <TableHeader>
+                <TableRow className="bg-gray-50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700">
+                  <TableHead className="w-[60px] text-center text-slate-700 dark:text-slate-300">No</TableHead>
+                  <TableHead className="text-slate-700 dark:text-slate-300">Order ID</TableHead>
+                  <TableHead className="text-slate-700 dark:text-slate-300">Produk</TableHead>
+                  <TableHead className="text-slate-700 dark:text-slate-300">Harga</TableHead>
+                  <TableHead className="text-slate-700 dark:text-slate-300">Status</TableHead>
+                  <TableHead className="text-slate-700 dark:text-slate-300">Metode Bayar</TableHead>
+                  <TableHead className="text-slate-700 dark:text-slate-300">No. Resi</TableHead>
+                  <TableHead className="text-center text-slate-700 dark:text-slate-300">Aksi</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {tableLoading ? (
+                  <TableRow>
+                    <TableCell colSpan={8} className="text-center py-6">
+                      <div className="flex items-center justify-center gap-2 text-muted-foreground">
+                        <svg
+                          className="animate-spin h-5 w-5 text-muted-foreground"
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                        >
+                          <circle
+                            className="opacity-25"
+                            cx="12"
+                            cy="12"
+                            r="10"
+                            stroke="currentColor"
+                            strokeWidth="4"
+                          />
+                          <path
+                            className="opacity-75"
+                            fill="currentColor"
+                            d="M4 12a8 8 0 018-8v8H4z"
+                          />
+                        </svg>
+                        <span>Memuat data...</span>
+                      </div>
+                    </TableCell>
                   </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {tableLoading ? (
-                    <TableRow>
-                      <TableCell colSpan={8} className="text-center py-6">
-                        <div className="flex items-center justify-center gap-2 text-muted-foreground">
+                ) : (
+                  filteredOrders.length > 0 ? filteredOrders.map((order: any, idx: number) => (
+                    <TableRow
+                      key={order.id}
+                      className={idx % 2 === 0
+                        ? "bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800"
+                        : "bg-gray-50/70 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-800"
+                      }
+                    >
+                      <TableCell className="text-center font-medium text-slate-900 dark:text-white">
+                        {(currentPage - 1) * 5 + idx + 1}
+                      </TableCell>
+                      <TableCell className="font-mono text-sm text-slate-900 dark:text-white">{order.id}</TableCell>
+                      <TableCell className="text-slate-900 dark:text-white">{order.line_items[0]?.product_name}</TableCell>
+                      <TableCell className="font-semibold text-emerald-600 dark:text-emerald-400">
+                        Rp {Number(order.line_items[0]?.sale_price).toLocaleString("id-ID")}
+                      </TableCell>
+                      <TableCell>
+                        <Badge
+                          variant={
+                            order.status === "COMPLETED"
+                              ? "default"
+                              : order.status === "CANCELLED"
+                                ? "destructive"
+                                : "secondary"
+                          }
+                          className={order.status === "COMPLETED" ? "bg-green-500 text-white" : ""}
+                        >
+                          {order.status}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-slate-900 dark:text-white">{order.payment_method_name}</TableCell>
+                      <TableCell className="text-slate-900 dark:text-white">
+                        {order.line_items[0]?.tracking_number || "-"}
+                      </TableCell>
+                      <TableCell className="text-center">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon" className="h-8 w-8 p-0 hover:bg-slate-100 dark:hover:bg-slate-700">
+                              <MoreVertical className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end" className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
+                            <DropdownMenuLabel className="text-slate-900 dark:text-white">Aksi</DropdownMenuLabel>
+                            <DropdownMenuSeparator className="bg-slate-200 dark:bg-slate-700" />
+                            <DropdownMenuItem onClick={() => console.log("Detail", order.id)} className="text-slate-900 dark:text-white hover:bg-slate-100 dark:hover:bg-slate-700">
+                              <Eye className="mr-2 h-4 w-4" /> Detail
+                            </DropdownMenuItem>
+                            {order.line_items[0]?.tracking_number && (
+                              <DropdownMenuItem onClick={() => console.log("Lacak", order.id)} className="text-slate-900 dark:text-white hover:bg-slate-100 dark:hover:bg-slate-700">
+                                <MapPin className="mr-2 h-4 w-4" /> Lacak
+                              </DropdownMenuItem>
+                            )}
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
+                    </TableRow>
+                  )) : <TableRow>
+                    <TableCell colSpan={8} className="h-64">
+                      <div className="flex flex-col items-center justify-center text-gray-400 dark:text-slate-500">
+                        <div className="w-20 h-20 mb-4 rounded-full bg-gray-100 dark:bg-slate-800 flex items-center justify-center">
                           <svg
-                            className="animate-spin h-5 w-5 text-muted-foreground"
-                            xmlns="http://www.w3.org/2000/svg"
+                            className="w-10 h-10 text-gray-300 dark:text-slate-600"
                             fill="none"
+                            stroke="currentColor"
                             viewBox="0 0 24 24"
                           >
-                            <circle
-                              className="opacity-25"
-                              cx="12"
-                              cy="12"
-                              r="10"
-                              stroke="currentColor"
-                              strokeWidth="4"
-                            />
                             <path
-                              className="opacity-75"
-                              fill="currentColor"
-                              d="M4 12a8 8 0 018-8v8H4z"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
                             />
                           </svg>
-                          <span>Memuat data...</span>
                         </div>
-                      </TableCell>
-                    </TableRow>
-                  ) : (
-                    filteredOrders.length > 0 ? filteredOrders.map((order: any, idx: number) => (
-                      <TableRow
-                        key={order.id}
-                        className={idx % 2 === 0 ? "bg-white" : "bg-gray-50/70"}
-                      >
-                        <TableCell className="text-center font-medium">
-                          {(currentPage - 1) * 5 + idx + 1}
-                        </TableCell>
-                        <TableCell className="font-mono text-sm">{order.id}</TableCell>
-                        <TableCell>{order.line_items[0]?.product_name}</TableCell>
-                        <TableCell className="font-semibold text-emerald-600">
-                          Rp {Number(order.line_items[0]?.sale_price).toLocaleString("id-ID")}
-                        </TableCell>
-                        <TableCell>
-                          <Badge
-                            variant={
-                              order.status === "COMPLETED"
-                                ? "default"
-                                : order.status === "CANCELLED"
-                                  ? "destructive"
-                                  : "secondary"
-                            }
-                            className={order.status === "COMPLETED" ? "bg-green-500 text-white" : ""}
-                          >
-                            {order.status}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>{order.payment_method_name}</TableCell>
-                        <TableCell>
-                          {order.line_items[0]?.tracking_number || "-"}
-                        </TableCell>
-                        <TableCell className="text-center">
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="icon" className="h-8 w-8 p-0">
-                                <MoreVertical className="h-4 w-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuLabel>Aksi</DropdownMenuLabel>
-                              <DropdownMenuSeparator />
-                              <DropdownMenuItem onClick={() => console.log("Detail", order.id)}>
-                                <Eye className="mr-2 h-4 w-4" /> Detail
-                              </DropdownMenuItem>
-                              {order.line_items[0]?.tracking_number && (
-                                <DropdownMenuItem onClick={() => console.log("Lacak", order.id)}>
-                                  <MapPin className="mr-2 h-4 w-4" /> Lacak
-                                </DropdownMenuItem>
-                              )}
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </TableCell>
-                      </TableRow>
-                    )) : <TableRow>
-                      <TableCell colSpan={8} className="h-64">
-                        <div className="flex flex-col items-center justify-center text-gray-400">
-                          <div className="w-20 h-20 mb-4 rounded-full bg-gray-100 flex items-center justify-center">
-                            <svg
-                              className="w-10 h-10 text-gray-300"
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                              />
-                            </svg>
-                          </div>
-                          <p className="text-lg font-semibold text-gray-500 mb-2">Tidak Ada Data</p>
-                          <p className="text-sm text-gray-400">Belum ada pesanan yang tersedia</p>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  )}
-                </TableBody>
-              </Table>
-            </div>
+                        <p className="text-lg font-semibold text-gray-500 dark:text-slate-400 mb-2">Tidak Ada Data</p>
+                        <p className="text-sm text-gray-400 dark:text-slate-500">Belum ada pesanan yang tersedia</p>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </div>
 
-            {/* Mobile & Tablet Card View */}
-            <div className="lg:hidden space-y-4">
-              {tableLoading ? (
-                <div className="bg-white border border-gray-200 rounded-lg p-8">
-                  <div className="flex flex-col items-center justify-center gap-3 text-muted-foreground">
-                    <svg
-                      className="animate-spin h-8 w-8 text-muted-foreground"
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                    >
-                      <circle
-                        className="opacity-25"
-                        cx="12"
-                        cy="12"
-                        r="10"
-                        stroke="currentColor"
-                        strokeWidth="4"
-                      />
-                      <path
-                        className="opacity-75"
-                        fill="currentColor"
-                        d="M4 12a8 8 0 018-8v8H4z"
-                      />
-                    </svg>
-                    <span className="text-sm font-medium">Memuat data...</span>
-                  </div>
-                </div>
-              ) : (
-                filteredOrders.map((order: any, idx: number) => (
-                  <div
-                    key={order.id}
-                    className="bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow"
+          {/* Mobile & Tablet Card View */}
+          <div className="lg:hidden space-y-4">
+            {tableLoading ? (
+              <div className="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg p-8">
+                <div className="flex flex-col items-center justify-center gap-3 text-muted-foreground">
+                  <svg
+                    className="animate-spin h-8 w-8 text-muted-foreground"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
                   >
-                    {/* Card Header */}
-                    <div className="px-4 py-3 bg-gray-50 border-b border-gray-200 flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <div className="h-8 w-8 bg-blue-100 rounded-full flex items-center justify-center text-sm font-bold text-blue-600">
-                          {(currentPage - 1) * 5 + idx + 1}
-                        </div>
-                        <div>
-                          <p className="text-xs text-gray-500 font-medium">Order ID</p>
-                          <p className="text-sm font-mono font-semibold text-gray-900">{order.id}</p>
-                        </div>
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    />
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8v8H4z"
+                    />
+                  </svg>
+                  <span className="text-sm font-medium">Memuat data...</span>
+                </div>
+              </div>
+            ) : (
+              filteredOrders.map((order: any, idx: number) => (
+                <div
+                  key={order.id}
+                  className="bg-white overflow-hidden dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg shadow-sm hover:shadow-md transition-shadow"
+                >
+                  {/* Card Header */}
+                  <div className="px-4 py-3 bg-gray-50 dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700 flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className="h-8 w-8 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center text-sm font-bold text-blue-600 dark:text-blue-400">
+                        {(currentPage - 1) * 5 + idx + 1}
                       </div>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon" className="h-8 w-8 p-0">
-                            <MoreVertical className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuLabel>Aksi</DropdownMenuLabel>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem onClick={() => console.log("Detail", order.id)}>
-                            <Eye className="mr-2 h-4 w-4" /> Detail
+                      <div>
+                        <p className="text-xs text-gray-500 dark:text-slate-400 font-medium">Order ID</p>
+                        <p className="text-sm font-mono font-semibold text-gray-900 dark:text-white">{order.id}</p>
+                      </div>
+                    </div>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon" className="h-8 w-8 p-0 hover:bg-gray-100 dark:hover:bg-slate-700">
+                          <MoreVertical className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
+                        <DropdownMenuLabel className="text-slate-900 dark:text-white">Aksi</DropdownMenuLabel>
+                        <DropdownMenuSeparator className="bg-slate-200 dark:bg-slate-700" />
+                        <DropdownMenuItem onClick={() => console.log("Detail", order.id)} className="text-slate-900 dark:text-white hover:bg-slate-100 dark:hover:bg-slate-700">
+                          <Eye className="mr-2 h-4 w-4" /> Detail
+                        </DropdownMenuItem>
+                        {order.line_items[0]?.tracking_number && (
+                          <DropdownMenuItem onClick={() => console.log("Lacak", order.id)} className="text-slate-900 dark:text-white hover:bg-slate-100 dark:hover:bg-slate-700">
+                            <MapPin className="mr-2 h-4 w-4" /> Lacak
                           </DropdownMenuItem>
-                          {order.line_items[0]?.tracking_number && (
-                            <DropdownMenuItem onClick={() => console.log("Lacak", order.id)}>
-                              <MapPin className="mr-2 h-4 w-4" /> Lacak
-                            </DropdownMenuItem>
-                          )}
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </div>
-
-                    {/* Card Body */}
-                    <div className="p-4 space-y-3">
-                      {/* Product Info */}
-                      <div className="flex items-start gap-3">
-                        <div className="h-10 w-10 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                          <Package className="h-5 w-5 text-purple-600" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-xs text-gray-500 font-medium mb-1">Produk</p>
-                          <p className="text-sm font-medium text-gray-900 line-clamp-2">
-                            {order.line_items[0]?.product_name}
-                          </p>
-                        </div>
-                      </div>
-
-                      {/* Price & Status */}
-                      <div className="grid grid-cols-2 gap-3">
-                        <div>
-                          <p className="text-xs text-gray-500 font-medium mb-1">Harga</p>
-                          <p className="text-base font-bold text-emerald-600">
-                            Rp {Number(order.line_items[0]?.sale_price).toLocaleString("id-ID")}
-                          </p>
-                        </div>
-                        <div>
-                          <p className="text-xs text-gray-500 font-medium mb-1">Status</p>
-                          <Badge
-                            variant={
-                              order.status === "COMPLETED"
-                                ? "default"
-                                : order.status === "CANCELLED"
-                                  ? "destructive"
-                                  : "secondary"
-                            }
-                            className={order.status === "COMPLETED" ? "bg-green-500 text-white" : ""}
-                          >
-                            {order.status}
-                          </Badge>
-                        </div>
-                      </div>
-
-                      {/* Payment Method */}
-                      <div className="flex items-center gap-2 pt-2 border-t border-gray-100">
-                        <CreditCard className="h-4 w-4 text-gray-400" />
-                        <div className="flex-1">
-                          <p className="text-xs text-gray-500">Metode Pembayaran</p>
-                          <p className="text-sm font-medium text-gray-900">{order.payment_method_name}</p>
-                        </div>
-                      </div>
-
-                      {/* Tracking Number */}
-                      {order.line_items[0]?.tracking_number ? (
-                        <div className="flex items-center gap-2 pt-2 border-t border-gray-100">
-                          <Truck className="h-4 w-4 text-gray-400" />
-                          <div className="flex-1">
-                            <p className="text-xs text-gray-500">No. Resi</p>
-                            <p className="text-sm font-mono font-medium text-gray-900">
-                              {order.line_items[0].tracking_number}
-                            </p>
-                          </div>
-                        </div>
-                      ) : (
-                        <div className="flex items-center gap-2 pt-2 border-t border-gray-100">
-                          <Truck className="h-4 w-4 text-gray-300" />
-                          <div className="flex-1">
-                            <p className="text-xs text-gray-500">No. Resi</p>
-                            <p className="text-sm text-gray-400">Belum tersedia</p>
-                          </div>
-                        </div>
-                      )}
-                    </div>
+                        )}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </div>
-                ))
-              )}
 
-              {/* Empty State - Mobile */}
-              {!tableLoading && orders.length === 0 && (
-                <div className="bg-white border border-gray-200 rounded-lg p-8">
-                  <div className="flex flex-col items-center justify-center gap-3 text-gray-500">
-                    <Package className="h-12 w-12 text-gray-400" />
-                    <p className="text-sm font-medium">Tidak ada data pesanan</p>
+                  {/* Card Body */}
+                  <div className="p-4 space-y-3">
+                    {/* Product Info */}
+                    <div className="flex items-start gap-3">
+                      <div className="h-10 w-10 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <Package className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs text-gray-500 dark:text-slate-400 font-medium mb-1">Produk</p>
+                        <p className="text-sm font-medium text-gray-900 dark:text-white line-clamp-2">
+                          {order.line_items[0]?.product_name}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Price & Status */}
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <p className="text-xs text-gray-500 dark:text-slate-400 font-medium mb-1">Harga</p>
+                        <p className="text-base font-bold text-emerald-600 dark:text-emerald-400">
+                          Rp {Number(order.line_items[0]?.sale_price).toLocaleString("id-ID")}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-gray-500 dark:text-slate-400 font-medium mb-1">Status</p>
+                        <Badge
+                          variant={
+                            order.status === "COMPLETED"
+                              ? "default"
+                              : order.status === "CANCELLED"
+                                ? "destructive"
+                                : "secondary"
+                          }
+                          className={order.status === "COMPLETED" ? "bg-green-500 text-white" : ""}
+                        >
+                          {order.status}
+                        </Badge>
+                      </div>
+                    </div>
+
+                    {/* Payment Method */}
+                    <div className="flex items-center gap-2 pt-2 border-t border-gray-100 dark:border-slate-700">
+                      <CreditCard className="h-4 w-4 text-gray-400 dark:text-slate-500" />
+                      <div className="flex-1">
+                        <p className="text-xs text-gray-500 dark:text-slate-400">Metode Pembayaran</p>
+                        <p className="text-sm font-medium text-gray-900 dark:text-white">{order.payment_method_name}</p>
+                      </div>
+                    </div>
+
+                    {/* Tracking Number */}
+                    {order.line_items[0]?.tracking_number ? (
+                      <div className="flex items-center gap-2 pt-2 border-t border-gray-100 dark:border-slate-700">
+                        <Truck className="h-4 w-4 text-gray-400 dark:text-slate-500" />
+                        <div className="flex-1">
+                          <p className="text-xs text-gray-500 dark:text-slate-400">No. Resi</p>
+                          <p className="text-sm font-mono font-medium text-gray-900 dark:text-white">
+                            {order.line_items[0].tracking_number}
+                          </p>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-2 pt-2 border-t border-gray-100 dark:border-slate-700">
+                        <Truck className="h-4 w-4 text-gray-300 dark:text-slate-600" />
+                        <div className="flex-1">
+                          <p className="text-xs text-gray-500 dark:text-slate-400">No. Resi</p>
+                          <p className="text-sm text-gray-400 dark:text-slate-500">Belum tersedia</p>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
-              )}
-            </div>
-          </>
+              ))
+            )}
 
+            {/* Empty State - Mobile */}
+            {!tableLoading && orders.length === 0 && (
+              <div className="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg p-8">
+                <div className="flex flex-col items-center justify-center gap-3 text-gray-500 dark:text-slate-400">
+                  <Package className="h-12 w-12 text-gray-400 dark:text-slate-500" />
+                  <p className="text-sm font-medium">Tidak ada data pesanan</p>
+                </div>
+              </div>
+            )}
+          </div>
 
-          <div className="mt-6 pt-6 border-t border-gray-200">
+          {/* Pagination */}
+          <div className="mt-6 pt-6 border-t border-gray-200 dark:border-slate-700">
             <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
               <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-700">Data per halaman:</span>
+                <span className="text-sm text-gray-700 dark:text-slate-300">Data per halaman:</span>
                 <div className="relative">
                   <select
                     value={pageSize}
                     onChange={(e) => {
                       setPageSize(Number(e.target.value))
                     }}
-                    className="px-3 py-2 pr-8 border border-gray-300 rounded-lg appearance-none focus:ring-2 focus:ring-black focus:border-transparent bg-white text-sm"
+                    className="px-3 py-2 pr-8 border border-gray-300 dark:border-slate-700 rounded-lg appearance-none focus:ring-2 focus:ring-black dark:focus:ring-white focus:border-transparent bg-white dark:bg-slate-800 text-sm text-slate-900 dark:text-white"
                   >
                     <option value={5}>5</option>
                     <option value={10}>10</option>
@@ -799,10 +799,10 @@ export default function TikTokPage() {
                     <option value={50}>50</option>
                     <option value={100}>100</option>
                   </select>
-                  <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none" size={16} />
+                  <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-slate-500 pointer-events-none" size={16} />
                 </div>
               </div>
-              <span className="text-sm text-gray-700 w-auto">
+              <span className="text-sm text-gray-700 dark:text-slate-300 w-auto">
                 Halaman {currentPage}
               </span>
               <div>
@@ -814,34 +814,31 @@ export default function TikTokPage() {
                         onClick={() => loadPage(currentPage - 1)}
                         aria-disabled={currentPage === 1}
                         className={`
-                        ${currentPage === 1 || loading
-                            ? 'opacity-50 cursor-not-allowed pointer-events-none bg-gray-100 text-gray-400 border-gray-200'
-                            : 'cursor-pointer hover:bg-gray-50 border-gray-300 text-gray-700 bg-white'
+                    ${currentPage === 1 || tableLoading
+                            ? 'opacity-50 cursor-not-allowed pointer-events-none bg-gray-100 dark:bg-slate-800 text-gray-400 dark:text-slate-600 border-gray-200 dark:border-slate-700'
+                            : 'cursor-pointer hover:bg-gray-50 dark:hover:bg-slate-700 border-gray-300 dark:border-slate-600 text-gray-700 dark:text-slate-300 bg-white dark:bg-slate-800'
                           }
-                      `}
+                  `}
                       />
                     </PaginationItem>
-
-
 
                     {/* Next */}
                     <PaginationItem>
                       <PaginationNext
                         onClick={() => loadPage(currentPage + 1)}
-                        aria-disabled={!hasNext}
+                        aria-disabled={!hasNext || tableLoading}
                         className={`
-                        ${!hasNext || loading
-                            ? 'opacity-50 cursor-not-allowed pointer-events-none bg-gray-100 text-gray-400 border-gray-200'
-                            : 'cursor-pointer hover:bg-gray-800 bg-gray-900 text-white border-gray-900'
+                    ${!hasNext || tableLoading
+                            ? 'opacity-50 cursor-not-allowed pointer-events-none bg-gray-100 dark:bg-slate-800 text-gray-400 dark:text-slate-600 border-gray-200 dark:border-slate-700'
+                            : 'cursor-pointer hover:bg-gray-800 dark:hover:bg-white bg-gray-900 dark:bg-slate-700 text-white dark:text-slate-900 dark:hover:text-black border-gray-900 dark:border-slate-600'
                           }
-                      `}
+                  `}
                       />
                     </PaginationItem>
                   </PaginationContent>
                 </Pagination>
               </div>
             </div>
-
           </div>
 
         </CardContent>

@@ -27,7 +27,7 @@ export const StatsCard: React.FC<StatsCardProps> = ({ stat, index, loading }) =>
       style={{ animationDelay: `${index * 100}ms` }}
     >
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-        <CardTitle className="text-sm font-semibold text-slate-700 group-hover:text-slate-900 transition-colors">
+        <CardTitle className="text-sm dark:text-slate-300 font-semibold text-slate-700 group-hover:text-slate-900 transition-colors">
           {stat.title}
         </CardTitle>
         <div
@@ -41,7 +41,7 @@ export const StatsCard: React.FC<StatsCardProps> = ({ stat, index, loading }) =>
         {loading ? (
           <div className="h-8 w-20 bg-slate-200 animate-pulse rounded mb-2"></div>
         ) : (
-          <div className="text-3xl font-bold text-slate-900 mb-2">{stat.value}</div>
+          <div className="text-3xl font-bold text-slate-900 mb-2 dark:text-slate-300">{stat.value}</div>
         )}
 
         {/* Change */}
@@ -61,7 +61,7 @@ export const StatsCard: React.FC<StatsCardProps> = ({ stat, index, loading }) =>
             >
               {stat.change}
             </span>
-            <span className="ml-2 text-slate-500">dari bulan lalu</span>
+            <span className="ml-2 text-slate-500 dark:text-slate-400">dari bulan lalu</span>
           </div>
         )}
       </CardContent>

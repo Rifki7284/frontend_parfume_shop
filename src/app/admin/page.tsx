@@ -191,10 +191,10 @@ export default function AdminDashboard() {
       change: calcChange(combined?.this_month.total_orders ?? 0, combined?.last_month.total_orders ?? 0),
       changeType: (combined?.this_month.total_orders ?? 0) >= (combined?.last_month.total_orders ?? 0) ? "increase" : "decrease",
       icon: ShoppingCart,
-      bgGradient: "bg-gradient-to-br from-blue-50 to-indigo-50",
-      iconBg: "bg-gradient-to-br from-blue-500 to-indigo-500",
+      bgGradient: "bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30",
+      iconBg: "bg-gradient-to-br from-blue-500 to-indigo-500 dark:from-blue-600 dark:to-indigo-600",
       iconColor: "text-white",
-      borderColor: "border-blue-200",
+      borderColor: "border-blue-200 dark:border-blue-800",
     },
     {
       title: "Total GMV",
@@ -202,10 +202,10 @@ export default function AdminDashboard() {
       change: calcChange(combined?.this_month.gmv ?? 0, combined?.last_month.gmv ?? 0),
       changeType: (combined?.this_month.gmv ?? 0) >= (combined?.last_month.gmv ?? 0) ? "increase" : "decrease",
       icon: DollarSign,
-      bgGradient: "bg-gradient-to-br from-emerald-50 to-teal-50",
-      iconBg: "bg-gradient-to-br from-emerald-500 to-teal-500",
+      bgGradient: "bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-950/30 dark:to-teal-950/30",
+      iconBg: "bg-gradient-to-br from-emerald-500 to-teal-500 dark:from-emerald-600 dark:to-teal-600",
       iconColor: "text-white",
-      borderColor: "border-emerald-200",
+      borderColor: "border-emerald-200 dark:border-emerald-800",
     },
     {
       title: "Produk Terjual",
@@ -213,10 +213,10 @@ export default function AdminDashboard() {
       change: calcChange(combined?.this_month.sold ?? 0, combined?.last_month.sold ?? 0),
       changeType: (combined?.this_month.sold ?? 0) >= (combined?.last_month.sold ?? 0) ? "increase" : "decrease",
       icon: Package,
-      bgGradient: "bg-gradient-to-br from-orange-50 to-amber-50",
-      iconBg: "bg-gradient-to-br from-orange-500 to-amber-500",
+      bgGradient: "bg-gradient-to-br from-orange-50 to-amber-50 dark:from-orange-950/30 dark:to-amber-950/30",
+      iconBg: "bg-gradient-to-br from-orange-500 to-amber-500 dark:from-orange-600 dark:to-amber-600",
       iconColor: "text-white",
-      borderColor: "border-orange-200",
+      borderColor: "border-orange-200 dark:border-orange-800",
     },
     {
       title: "Pelanggan",
@@ -224,15 +224,12 @@ export default function AdminDashboard() {
       change: calcChange(combined?.this_month.customers ?? 0, combined?.last_month.customers ?? 0),
       changeType: (combined?.this_month.customers ?? 0) >= (combined?.last_month.customers ?? 0) ? "increase" : "decrease",
       icon: Users,
-      bgGradient: "bg-gradient-to-br from-purple-50 to-violet-50",
-      iconBg: "bg-gradient-to-br from-purple-500 to-violet-500",
+      bgGradient: "bg-gradient-to-br from-purple-50 to-violet-50 dark:from-purple-950/30 dark:to-violet-950/30",
+      iconBg: "bg-gradient-to-br from-purple-500 to-violet-500 dark:from-purple-600 dark:to-violet-600",
       iconColor: "text-white",
-      borderColor: "border-purple-200",
+      borderColor: "border-purple-200 dark:border-purple-800",
     },
-
-
   ]
-
   useEffect(() => {
     if (session?.user?.accessToken != undefined) {
       loadStatsTiktok()
@@ -244,48 +241,14 @@ export default function AdminDashboard() {
   }, [status, session?.user?.accessToken]);
   if (status == "loading") return <ModernGlassPreloader />;
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white dark:bg-gray-950">
       <div className="space-y-8 p-6  mx-auto">
         <div className="mb-8">
-          <h1 className="text-4xl font-bold text-slate-900 mb-3">Dashboard</h1>
-          <p className="text-slate-600 text-lg">Ringkasan performa penjualan TikTok dan Shopee Anda</p>
+          <h1 className="text-4xl font-bold text-slate-900 mb-3 dark:text-white">Dashboard</h1>
+          <p className="text-slate-600 text-lg dark:text-white/60">Ringkasan performa penjualan TikTok dan Shopee Anda</p>
         </div>
 
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-          {/* {statsCards.map((stat, index) => (
-            <Card
-              key={stat.title}
-              className={`${stat.bgGradient} ${stat.borderColor} border-2 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 group`}
-              style={{ animationDelay: `${index * 100}ms` }}
-            >
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-                <CardTitle className="text-sm font-semibold text-slate-700 group-hover:text-slate-900 transition-colors">
-                  {stat.title}
-                </CardTitle>
-                <div
-                  className={`${stat.iconBg} p-3 rounded-xl shadow-md group-hover:scale-110 transition-transform duration-200`}
-                >
-                  <stat.icon className={`h-5 w-5 ${stat.iconColor}`} />
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="text-3xl font-bold text-slate-900 mb-2">{stat.value}</div>
-                <div className="flex items-center text-sm">
-                  {stat.changeType === "increase" ? (
-                    <TrendingUp className="mr-2 h-4 w-4 text-emerald-600" />
-                  ) : (
-                    <TrendingDown className="mr-2 h-4 w-4 text-red-500" />
-                  )}
-                  <span
-                    className={`font-semibold ${stat.changeType === "increase" ? "text-emerald-600" : "text-red-500"}`}
-                  >
-                    {stat.change}
-                  </span>
-                  <span className="ml-2 text-slate-500">dari bulan lalu</span>
-                </div>
-              </CardContent>
-            </Card>
-          ))} */}
           {loadStats || !combined ? Array.from({ length: 4 }).map((_, index) => (
             <StatsCard
               key={index}
@@ -295,10 +258,10 @@ export default function AdminDashboard() {
                 change: "0%",
                 changeType: "increase",
                 icon: () => <div />,
-                bgGradient: "bg-gradient-to-br from-gray-50 to-gray-100",
-                borderColor: "border-gray-200",
-                iconBg: "bg-gray-200",
-                iconColor: "text-gray-400",
+                bgGradient: "bg-gray-50 dark:bg-gray-800",
+                borderColor: "border-gray-200 dark:border-gray-700",
+                iconBg: "bg-gray-200 dark:bg-gray-700",
+                iconColor: "text-gray-400 dark:text-gray-500",
               }}
               index={index}
               loading={true}
@@ -310,7 +273,7 @@ export default function AdminDashboard() {
               style={{ animationDelay: `${index * 100}ms` }}
             >
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-                <CardTitle className="text-sm font-semibold text-slate-700 group-hover:text-slate-900 transition-colors">
+                <CardTitle className="text-sm font-semibold text-slate-700 dark:text-slate-300 group-hover:text-slate-900 dark:group-hover:text-white transition-colors">
                   {stat.title}
                 </CardTitle>
                 <div
@@ -320,19 +283,22 @@ export default function AdminDashboard() {
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="text-3xl font-bold text-slate-900 mb-2">{stat.value}</div>
+                <div className="text-3xl font-bold text-slate-900 dark:text-white mb-2">{stat.value}</div>
                 <div className="flex items-center text-sm">
                   {stat.changeType === "increase" ? (
-                    <TrendingUp className="mr-2 h-4 w-4 text-emerald-600" />
+                    <TrendingUp className="mr-2 h-4 w-4 text-emerald-600 dark:text-emerald-400" />
                   ) : (
-                    <TrendingDown className="mr-2 h-4 w-4 text-red-500" />
+                    <TrendingDown className="mr-2 h-4 w-4 text-red-500 dark:text-red-400" />
                   )}
                   <span
-                    className={`font-semibold ${stat.changeType === "increase" ? "text-emerald-600" : "text-red-500"}`}
+                    className={`font-semibold ${stat.changeType === "increase"
+                      ? "text-emerald-600 dark:text-emerald-400"
+                      : "text-red-500 dark:text-red-400"
+                      }`}
                   >
                     {stat.change}
                   </span>
-                  <span className="ml-2 text-slate-500">dari bulan lalu</span>
+                  <span className="ml-2 text-slate-500 dark:text-slate-400">dari bulan lalu</span>
                 </div>
               </CardContent>
             </Card>
@@ -340,15 +306,16 @@ export default function AdminDashboard() {
         </div>
 
         <div className="grid gap-8 md:grid-cols-2">
-          <Card className="md:col-span-2 pb-5 py-0 overflow-hidden border shadow-lg bg-white hover:shadow-xl transition-all duration-300">
-            <CardHeader className="py-5 bg-gray-50 rounded-t-lg border-b">
-              <CardTitle className="text-2xl font-bold text-slate-900">Tren Penjualan Bulanan</CardTitle>
-              <CardDescription className="text-slate-600 text-base">
+          <Card className="md:col-span-2 pb-5 py-0 overflow-hidden border border-slate-200 dark:border-slate-800 shadow-lg bg-white dark:bg-slate-900 hover:shadow-xl transition-all duration-300">
+            <CardHeader className="py-5 bg-gray-50 dark:bg-slate-800 rounded-t-lg border-b border-slate-200 dark:border-slate-700">
+              <CardTitle className="text-2xl font-bold text-slate-900 dark:text-white">
+                Tren Penjualan Bulanan
+              </CardTitle>
+              <CardDescription className="text-slate-600 dark:text-slate-400 text-base">
                 Perbandingan penjualan TikTok vs Shopee dalam 6 bulan terakhir
               </CardDescription>
             </CardHeader>
             <CardContent className="pt-8">
-
               <ChartContainer
                 config={{
                   tiktok: {
@@ -368,116 +335,234 @@ export default function AdminDashboard() {
               >
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={salesData}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                    <XAxis dataKey="month" />
-                    <YAxis />
+                    <CartesianGrid
+                      strokeDasharray="3 3"
+                      stroke="#e2e8f0"
+                      className="dark:stroke-slate-700"
+                    />
+                    <XAxis
+                      dataKey="month"
+                      stroke="#64748b"
+                      className="dark:stroke-slate-400"
+                    />
+                    <YAxis
+                      stroke="#64748b"
+                      className="dark:stroke-slate-400"
+                    />
                     <ChartTooltip content={<ChartTooltipContent />} />
                     <Legend />
-                    <Line type="monotone" dataKey="tiktok" stroke="#42B549" strokeWidth={4} name="TikTok" />
-                    <Line type="monotone" dataKey="shopee" stroke="#EE4D2D" strokeWidth={4} name="Shopee" />
-                    <Line type="monotone" dataKey="total" stroke="hsl(270, 60%, 50%)" strokeWidth={4} name="Total" />
+                    <Line
+                      type="monotone"
+                      dataKey="tiktok"
+                      stroke="#42B549"
+                      strokeWidth={4}
+                      name="TikTok"
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="shopee"
+                      stroke="#EE4D2D"
+                      strokeWidth={4}
+                      name="Shopee"
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="total"
+                      stroke="hsl(270, 60%, 50%)"
+                      strokeWidth={4}
+                      name="Total"
+                    />
                   </LineChart>
                 </ResponsiveContainer>
               </ChartContainer>
             </CardContent>
           </Card>
 
-          <Card className="border py-0 pb-5 overflow-hidden shadow-lg bg-white hover:shadow-xl transition-all duration-300">
-            <CardHeader className="bg-gray-50 py-5 rounded-t-lg border-b">
-              <CardTitle className="text-xl font-bold text-slate-900">Distribusi Platform</CardTitle>
-              <CardDescription className="text-slate-600">Persentase penjualan per platform</CardDescription>
+          {/* Pie Chart - Distribusi Platform */}
+          <Card className="border border-slate-200 dark:border-slate-800 py-0 pb-5 overflow-hidden shadow-lg bg-white dark:bg-slate-900 hover:shadow-xl transition-all duration-300">
+            <CardHeader className="bg-gray-50 dark:bg-slate-800 py-5 rounded-t-lg border-b border-slate-200 dark:border-slate-700">
+              <CardTitle className="text-xl font-bold text-slate-900 dark:text-white">
+                Distribusi Platform
+              </CardTitle>
+              <CardDescription className="text-slate-600 dark:text-slate-400">
+                Persentase penjualan per platform
+              </CardDescription>
             </CardHeader>
+
             <CardContent className="pt-8">
-              <ChartContainer
-                config={{
-                  tiktok: {
-                    label: "TikTok",
-                    color: "#42B549",
-                  },
-                  shopee: {
-                    label: "Shopee",
-                    color: "#EE4D2D",
-                  },
-                }}
-                className="h-[250px] w-full"
-              >
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={[
-                        { name: "TikTok", value: statsTiktok?.this_month.total_orders, color: "#42B549" },
-                        { name: "Shopee", value: statsShopee?.this_month.total_orders, color: "#EE4D2D" },
-                      ]}
-                      cx="50%"
-                      cy="50%"
-                      innerRadius={60}
-                      outerRadius={100}
-                      paddingAngle={5}
-                      dataKey="value"
-                    >
-                      {[
-                        { name: "TikTok", value: statsTiktok?.this_month.total_orders, color: "#42B549" },
-                        { name: "Shopee", value: statsShopee?.this_month.total_orders, color: "#EE4D2D" },
-                      ].map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.color} />
-                      ))}
-                    </Pie>
-                    <ChartTooltip content={<ChartTooltipContent />} />
-                    <Legend />
-                  </PieChart>
-                </ResponsiveContainer>
-              </ChartContainer>
+              {/* Hitung total order */}
+              {(() => {
+                const tiktokOrders = statsTiktok?.this_month.total_orders ?? 0
+                const shopeeOrders = statsShopee?.this_month.total_orders ?? 0
+                const total = tiktokOrders + shopeeOrders
+
+                if (total === 0) {
+                  // 👉 Jika tidak ada data
+                  return (
+                    <div className="flex flex-col items-center justify-center h-[250px] text-slate-500 dark:text-slate-400">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-12 w-12 mb-2 text-slate-400 dark:text-slate-500"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        strokeWidth={1.5}
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m0 3.75h.007v.008H12v-.008zm9.75-3.75A9.75 9.75 0 1 1 2.25 12a9.75 9.75 0 0 1 19.5 0z" />
+                      </svg>
+                      <p className="text-sm font-medium">Belum ada data penjualan bulan ini</p>
+                    </div>
+                  )
+                }
+
+                // 👉 Jika ada data
+                return (
+                  <ChartContainer
+                    config={{
+                      tiktok: { label: "TikTok", color: "#42B549" },
+                      shopee: { label: "Shopee", color: "#EE4D2D" },
+                    }}
+                    className="h-[250px] w-full"
+                  >
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie
+                          data={[
+                            { name: "TikTok", value: tiktokOrders, color: "#42B549" },
+                            { name: "Shopee", value: shopeeOrders, color: "#EE4D2D" },
+                          ]}
+                          cx="50%"
+                          cy="50%"
+                          innerRadius={60}
+                          outerRadius={100}
+                          paddingAngle={5}
+                          dataKey="value"
+                        >
+                          {[
+                            { name: "TikTok", value: tiktokOrders, color: "#42B549" },
+                            { name: "Shopee", value: shopeeOrders, color: "#EE4D2D" },
+                          ].map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={entry.color} />
+                          ))}
+                        </Pie>
+                        <ChartTooltip content={<ChartTooltipContent />} />
+                        <Legend />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  </ChartContainer>
+                )
+              })()}
             </CardContent>
           </Card>
 
-          <Card className="border shadow-lg py-0 pb-5 overflow-hidden bg-white hover:shadow-xl transition-all duration-300">
-            <CardHeader className="bg-gray-50 py-5 rounded-t-lg border-b">
-              <CardTitle className="text-xl font-bold text-slate-900">Produk Terlaris</CardTitle>
-              <CardDescription className="text-slate-600">Performa produk di kedua platform</CardDescription>
+
+          {/* Bar Chart - Produk Terlaris */}
+          <Card className="border border-slate-200 dark:border-slate-800 shadow-lg py-0 pb-5 overflow-hidden bg-white dark:bg-slate-900 hover:shadow-xl transition-all duration-300">
+            <CardHeader className="bg-gray-50 dark:bg-slate-800 py-5 rounded-t-lg border-b border-slate-200 dark:border-slate-700">
+              <CardTitle className="text-xl font-bold text-slate-900 dark:text-white">
+                Produk Terlaris
+              </CardTitle>
+              <CardDescription className="text-slate-600 dark:text-slate-400">
+                Performa produk di kedua platform
+              </CardDescription>
             </CardHeader>
+
             <CardContent>
+              {/* Select Platform */}
               <div className="mb-5">
                 <Select
                   value={decisionTopProduct}
                   onValueChange={(val) => setDecisionTopProduct(val)}
                 >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Pilih platform]" />
+                  <SelectTrigger className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white">
+                    <SelectValue placeholder="Pilih platform" />
                   </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="shopee">Shopee</SelectItem>
-                    <SelectItem value="tiktok">TikTok</SelectItem>
+                  <SelectContent className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
+                    <SelectItem
+                      value="shopee"
+                      className="text-slate-900 dark:text-white hover:bg-slate-100 dark:hover:bg-slate-700"
+                    >
+                      Shopee
+                    </SelectItem>
+                    <SelectItem
+                      value="tiktok"
+                      className="text-slate-900 dark:text-white hover:bg-slate-100 dark:hover:bg-slate-700"
+                    >
+                      TikTok
+                    </SelectItem>
                   </SelectContent>
                 </Select>
               </div>
-              <ChartContainer
-                config={{
-                  tiktok: {
-                    label: "TikTok",
-                    color: "#42B549",
-                  },
-                  shopee: {
-                    label: "Shopee",
-                    color: "#EE4D2D",
-                  },
-                }}
-                className="h-[250px] w-full"
-              >
 
-                <ResponsiveContainer width="100%" height={300}>
-                  <BarChart data={decisionTopProduct == "shopee" ? topProductShopee : topProductTiktok}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                    <XAxis dataKey="name" />
-                    <YAxis />
-                    <Tooltip />   {/* ✅ ini wajib biar tooltip muncul */}
-                    <Legend />
-                    <Bar dataKey="sold" fill={decisionTopProduct == "shopee" ? "#EE4D2D" : "#42B549"} name="Terjual" />
-                  </BarChart>
-                </ResponsiveContainer>
+              {/* Chart / Empty State */}
+              {(() => {
+                const data =
+                  decisionTopProduct === "shopee" ? topProductShopee : topProductTiktok
+                const hasData = Array.isArray(data) && data.length > 0
 
-              </ChartContainer>
+                if (!hasData) {
+                  return (
+                    <div className="flex flex-col items-center justify-center h-[250px] text-slate-500 dark:text-slate-400">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-12 w-12 mb-2 text-slate-400 dark:text-slate-500"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        strokeWidth={1.5}
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M12 9v3.75m0 3.75h.007v.008H12v-.008zm9.75-3.75A9.75 9.75 0 1 1 2.25 12a9.75 9.75 0 0 1 19.5 0z"
+                        />
+                      </svg>
+                      <p className="text-sm font-medium">
+                        Belum ada data produk terlaris untuk platform ini
+                      </p>
+                    </div>
+                  )
+                }
+
+                return (
+                  <ChartContainer
+                    config={{
+                      tiktok: { label: "TikTok", color: "#42B549" },
+                      shopee: { label: "Shopee", color: "#EE4D2D" },
+                    }}
+                    className="h-[250px] w-full"
+                  >
+                    <ResponsiveContainer width="100%" height={300}>
+                      <BarChart data={data}>
+                        <CartesianGrid
+                          strokeDasharray="3 3"
+                          stroke="#e2e8f0"
+                          className="dark:stroke-slate-700"
+                        />
+                        <XAxis
+                          dataKey="name"
+                          stroke="#64748b"
+                          className="dark:stroke-slate-400"
+                        />
+                        <YAxis
+                          stroke="#64748b"
+                          className="dark:stroke-slate-400"
+                        />
+                        <Tooltip />
+                        <Legend />
+                        <Bar
+                          dataKey="sold"
+                          fill={decisionTopProduct === "shopee" ? "#EE4D2D" : "#42B549"}
+                          name="Terjual"
+                        />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </ChartContainer>
+                )
+              })()}
             </CardContent>
           </Card>
+
         </div>
       </div>
     </div>

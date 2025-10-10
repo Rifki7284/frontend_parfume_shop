@@ -29,11 +29,6 @@ const sidebarItems = [
     href: "/admin/product",
     icon: Package,
   },
-  {
-    title: "Profile",
-    href: "/admin/profile",
-    icon: ShoppingBag,
-  },
 
 ]
 
@@ -49,7 +44,7 @@ function EchoLogo() {
           <div className="w-4 h-4 border-2 border-white rounded-full border-r-transparent animate-pulse" />
         </div>
       </div>
-      <span className="text-xl font-bold text-slate-900">Echo</span>
+      <span className="text-xl font-bold text-slate-900 dark:text-white">Echo</span>
     </div>
   )
 }
@@ -58,14 +53,13 @@ export function AdminSidebar({ className }: AdminSidebarProps) {
   const pathname = usePathname()
 
   return (
-    <div className={cn("pb-12 bg-white", className)}>
+    <div className={cn("pb-12 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800", className)}>
       <div className="space-y-4 py-6">
         <div className="px-6 py-4">
           <div className="mb-8">
-            <EchoLogo />
-            <p className="text-sm text-slate-500 mt-1">Admin Panel</p>
+            <EchoLogo/>
+            <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Admin Panel</p>
           </div>
-
           <div className="space-y-1">
             {sidebarItems.map((item) => (
               <Link
@@ -74,8 +68,8 @@ export function AdminSidebar({ className }: AdminSidebarProps) {
                 className={cn(
                   "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200",
                   pathname === item.href
-                    ? "bg-slate-900 text-white"
-                    : "text-slate-700 hover:bg-slate-100 hover:text-slate-900",
+                    ? "bg-slate-900 dark:bg-slate-800 text-white shadow-sm"
+                    : "text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/50 hover:text-slate-900 dark:hover:text-white",
                 )}
               >
                 <item.icon className="h-4 w-4" />

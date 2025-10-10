@@ -7,6 +7,8 @@ import { useState, useEffect } from "react"
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden"
 import { signOut } from "next-auth/react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "./ui/dialog"
+import { useTheme } from "next-themes"
+import { Moon, Sun } from "lucide-react"
 const BellIcon = () => (
   <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
     <path
@@ -128,7 +130,7 @@ export function LogoutModal({
 
 export function AdminHeader() {
   const [showLogoutModal, setShowLogoutModal] = useState(false)
-
+  const { theme, setTheme } = useTheme()
   const handleLogout = () => {
     // Add your logout logic here
     console.log("User logged out")
@@ -139,46 +141,49 @@ export function AdminHeader() {
 
   return (
     <>
-      <header className="sticky top-0 z-50 w-full border-b border-slate-200 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60">
+      <header className="sticky top-0 z-50 w-full border-b border-slate-200 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 backdrop-blur supports-[backdrop-filter]:bg-white/60 dark:supports-[backdrop-filter]:bg-slate-900/60">
         <div className="flex h-16 items-center px-6">
           <div className="mr-4 md:hidden">
             <MobileAdminSidebar />
           </div>
-
           <div className="flex flex-1 items-center justify-between">
             <div className="flex items-center space-x-4">
-              <h1 className="text-lg font-semibold text-slate-900 md:hidden">Echo Admin</h1>
-              <div className="hidden md:flex relative items-center">
-                <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400">
-                  <SearchIcon />
-                </div>
-                <Input
-                  placeholder="Search..."
-                  className="pl-10 w-80 bg-slate-50 border-slate-200 focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200"
-                />
-              </div>
             </div>
-
             <nav className="flex items-center space-x-2">
               <Clock />
-
-              <Button variant="ghost" size="icon" className="h-9 w-9 hover:bg-slate-100">
-                <BellIcon />
-                <span className="sr-only">Notifications</span>
-              </Button>
-              <Button variant="ghost" size="icon" className="h-9 w-9 hover:bg-slate-100">
-                <SettingsIcon />
-                <span className="sr-only">Settings</span>
-              </Button>
-              <Button variant="ghost" size="icon" className="h-9 w-9 hover:bg-slate-100">
-                <UserIcon />
-                <span className="sr-only">User menu</span>
-              </Button>
-
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-9 w-9 hover:bg-red-50 hover:text-red-600 transition-colors"
+                className="h-9 w-9 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300"
+              >
+                <BellIcon />
+                <span className="sr-only">Notifications</span>
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-9 w-9 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300"
+                onClick={() => setTheme(theme === "light" ? "dark" : "light")}
+              >
+                {theme === "light" ? (
+                  <Moon className="h-5 w-5" />
+                ) : (
+                  <Sun className="h-5 w-5" />
+                )}
+                <span className="sr-only">Toggle theme</span>
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-9 w-9 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300"
+              >
+                <UserIcon />
+                <span className="sr-only">User menu</span>
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-9 w-9 text-slate-700 dark:text-slate-300 hover:bg-red-50 dark:hover:bg-red-950/30 hover:text-red-600 dark:hover:text-red-400 transition-colors"
                 onClick={() => setShowLogoutModal(true)}
               >
                 <LogOutIcon />
