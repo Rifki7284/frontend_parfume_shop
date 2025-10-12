@@ -91,6 +91,8 @@ export default function ShopeePage() {
   const [carrier, setCarrier] = useState<string>("")
   const { data: session, status } = useSession();
   const api = process.env.NEXT_PUBLIC_API_URL
+  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1)
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear())
   const [pageSize, setPageSize] = useState(5)
   const [loadStatsNow, setLoadStatsNow] = useState<boolean>(true)
   const [loadStatsPrev, setLoadStatsPrev] = useState<boolean>(true)
@@ -98,7 +100,8 @@ export default function ShopeePage() {
     if (!session?.user?.accessToken) return
 
     try {
-      const res = await fetch(`${api}/shopee/shop/performance`, {
+      const query = `?month=${selectedMonth}&year=${selectedYear}`
+      const res = await fetch(`${api}/shopee/shop/performance${query}`, {
         headers: {
           Authorization: `Bearer ${session?.user?.accessToken}`,
           "Content-Type": "application/json",

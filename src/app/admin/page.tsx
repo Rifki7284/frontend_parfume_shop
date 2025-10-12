@@ -58,6 +58,8 @@ export default function AdminDashboard() {
   const [loadStats, setLoadStats] = useState<boolean>(true)
   const [salesData, setSalesData] = useState<any[]>([]);
   const [topProductShopee, setTopProductShopee] = useState<any[]>()
+  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1)
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear())
   const [topProductTiktok, setTopProductTiktok] = useState<any[]>()
   const [decisionTopProduct, setDecisionTopProduct] = useState<string>("shopee")
   const cipher = process.env.NEXT_PUBLIC_SHOP_CIPHER
@@ -66,7 +68,8 @@ export default function AdminDashboard() {
     if (!session?.user?.accessToken) return
 
     try {
-      const res = await fetch(`${api}/tiktok/shop/stats/${cipher}/performance`, {
+      const query = `?month=${selectedMonth}&year=${selectedYear}`
+      const res = await fetch(`${api}/tiktok/shop/stats/${cipher}/performance${query}`, {
         headers: {
           Authorization: `Bearer ${session?.user?.accessToken}`,
           "Content-Type": "application/json",
@@ -82,38 +85,43 @@ export default function AdminDashboard() {
     if (!session?.user?.accessToken) return
 
     try {
-      const resShopee = await fetch(`${api}/shopee/products/best/seller`, {
+      const query = `?month=${selectedMonth}&year=${selectedYear}`
+
+      const resShopee = await fetch(`${api}/shopee/products/best/seller${query}`, {
         headers: {
           Authorization: `Bearer ${session?.user?.accessToken}`,
           "Content-Type": "application/json",
         },
       })
       const dataShopee = await resShopee.json()
-      const resTiktok = await fetch(`${api}/tiktok/shop/${cipher}/top-product`, {
+
+      const resTiktok = await fetch(`${api}/tiktok/shop/${cipher}/top-product${query}`, {
         headers: {
           Authorization: `Bearer ${session?.user?.accessToken}`,
           "Content-Type": "application/json",
         },
       })
       const dataTiktok = await resTiktok.json()
+      console.log(dataShopee)
       setTopProductShopee(dataShopee)
       setTopProductTiktok(dataTiktok)
     } catch (err) {
       console.log(err)
     }
   }
+
   async function loadSalesData() {
     if (!session?.user?.accessToken) return
-
+    const query = `?year=${selectedYear}`
     try {
       const [shopeeRes, tiktokRes] = await Promise.all([
-        fetch(`${api}/shopee/orders/total/year`, {
+        fetch(`${api}/shopee/orders/total/year${query}`, {
           headers: {
             Authorization: `Bearer ${session?.user?.accessToken}`,
             "Content-Type": "application/json",
           },
         }),
-        fetch(`${api}/tiktok/shop/stats/${cipher}/performance/year`, {
+        fetch(`${api}/tiktok/shop/stats/${cipher}/performance/year${query}`, {
           headers: {
             Authorization: `Bearer ${session?.user?.accessToken}`,
             "Content-Type": "application/json",
@@ -146,7 +154,8 @@ export default function AdminDashboard() {
     if (!session?.user?.accessToken) return
 
     try {
-      const res = await fetch(`${api}/shopee/shop/performance`, {
+      const query = `?month=${selectedMonth}&year=${selectedYear}`
+      const res = await fetch(`${api}/shopee/shop/performance${query}`, {
         headers: {
           Authorization: `Bearer ${session?.user?.accessToken}`,
           "Content-Type": "application/json",
@@ -232,13 +241,14 @@ export default function AdminDashboard() {
   ]
   useEffect(() => {
     if (session?.user?.accessToken != undefined) {
+      setLoadStats(true)
       loadStatsTiktok()
       loadStatsShopee()
       loadTopProductShopee()
-      setLoadStats(false)
       loadSalesData()
+      setLoadStats(false)
     }
-  }, [status, session?.user?.accessToken]);
+  }, [status, session?.user?.accessToken, selectedMonth, selectedYear]);
   if (status == "loading") return <ModernGlassPreloader />;
   return (
     <div className="min-h-screen bg-white dark:bg-gray-950">
@@ -247,9 +257,44 @@ export default function AdminDashboard() {
           <h1 className="text-4xl font-bold text-slate-900 mb-3 dark:text-white">Dashboard</h1>
           <p className="text-slate-600 text-lg dark:text-white/60">Ringkasan performa penjualan TikTok dan Shopee Anda</p>
         </div>
+        <div className="flex flex-wrap gap-4 mb-6">
+          <div className="flex items-center gap-3 bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm px-6 py-3 rounded-2xl border border-slate-200/50 dark:border-slate-800/50 shadow-lg hover:shadow-xl transition-all">
+            <label className="text-slate-700 dark:text-slate-300 font-semibold text-sm">Bulan:</label>
+            <Select value={String(selectedMonth)} onValueChange={(val) => setSelectedMonth(Number(val))}>
+              <SelectTrigger className="w-[150px] bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-xl">
+                <SelectValue placeholder="Pilih Bulan" />
+              </SelectTrigger>
+              <SelectContent className="bg-white dark:bg-slate-800 rounded-xl">
+                {[
+                  "Januari", "Februari", "Maret", "April", "Mei", "Juni",
+                  "Juli", "Agustus", "September", "Oktober", "November", "Desember"
+                ].map((m, i) => (
+                  <SelectItem key={i} value={String(i + 1)} className="text-slate-900 dark:text-white rounded-lg">
+                    {m}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
 
+          <div className="flex items-center gap-3 bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm px-6 py-3 rounded-2xl border border-slate-200/50 dark:border-slate-800/50 shadow-lg hover:shadow-xl transition-all">
+            <label className="text-slate-700 dark:text-slate-300 font-semibold text-sm">Tahun:</label>
+            <Select value={String(selectedYear)} onValueChange={(val) => setSelectedYear(Number(val))}>
+              <SelectTrigger className="w-[120px] bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-xl">
+                <SelectValue placeholder="Pilih Tahun" />
+              </SelectTrigger>
+              <SelectContent className="bg-white dark:bg-slate-800 rounded-xl">
+                {[2023, 2024, 2025].map((year) => (
+                  <SelectItem key={year} value={String(year)} className="text-slate-900 dark:text-white rounded-lg">
+                    {year}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-          {loadStats || !combined ? Array.from({ length: 4 }).map((_, index) => (
+          {loadStats && !combined ? Array.from({ length: 4 }).map((_, index) => (
             <StatsCard
               key={index}
               stat={{

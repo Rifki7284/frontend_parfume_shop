@@ -73,14 +73,15 @@ export default function TikTokPage() {
   const [keyword, setKeyword] = useState("")
 
   const [loadStatsNow, setLoadStatsNow] = useState<boolean>(true)
-  const [loadStatsPrev, setLoadStatsPrev] = useState<boolean>(true)
+  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1)
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear())
   const api = process.env.NEXT_PUBLIC_API_URL
   async function loadStats() {
     if (!session?.user?.accessToken) return
 
     try {
-
-      const res = await fetch(`${api}/tiktok/shop/stats/${process.env.NEXT_PUBLIC_SHOP_CIPHER}/performance`, {
+      const query = `?month=${selectedMonth}&year=${selectedYear}`
+      const res = await fetch(`${api}/tiktok/shop/stats/${process.env.NEXT_PUBLIC_SHOP_CIPHER}/performance${query}`, {
         headers: {
           Authorization: `Bearer ${session?.user?.accessToken}`,
           "Content-Type": "application/json",
@@ -89,7 +90,6 @@ export default function TikTokPage() {
       const data = await res.json()
       setStats(data)
       setLoadStatsNow(false)
-      setLoadStatsPrev(false)
     } catch (err) {
       console.log(err)
     }
@@ -106,75 +106,6 @@ export default function TikTokPage() {
       units: it.units_sold,
       gmv: Number(it.gmv?.amount),
     }));
-  }
-
-
-  async function loadChartLast7Days() {
-    if (!session?.user?.accessToken) return;
-    setLoading(true);
-
-    try {
-      const end = dayjs().format("YYYY-MM-DD");
-      const start = dayjs().subtract(6, "day").format("YYYY-MM-DD"); // 7 hari terakhir
-
-      // coba ambil rentang sekaligus
-      const aggregate = await fetchPerformance(
-        process.env.NEXT_PUBLIC_SHOP_CIPHER ?? "",
-        session.user.accessToken,
-        start,
-        end
-      );
-
-      const intervals = aggregate?.performance?.intervals ?? [];
-
-      if (Array.isArray(intervals) && intervals.length >= 7) {
-        // API sudah mengembalikan data harian untuk range -> langsung pakai
-        const mapped = mapIntervalsToChart(intervals);
-        setChartData(mapped);
-        console.log("Chart mapped from single range call:", mapped);
-      } else {
-        // fallback: fetch per-day (start=end) — safer when API returns aggregated single interval
-        const dates = [];
-        for (let i = 6; i >= 0; i--) {
-          dates.push(dayjs().subtract(i, "day").format("YYYY-MM-DD"));
-        }
-
-        // lakukan parallel fetch per tanggal. catch agar 1 gagal tidak menghentikan semuanya.
-        const promises = dates.map((d) =>
-          fetchPerformance(
-            process.env.NEXT_PUBLIC_SHOP_CIPHER ?? "",
-            session.user.accessToken,
-            d,
-            d
-          ).catch((err) => {
-            console.error("fetchPerformance fail for", d, err);
-            return null;
-          })
-        );
-
-        const results = await Promise.all(promises);
-
-        // tiap result diambil intervals[0] jika ada
-        const mapped = dates.map((d, idx) => {
-          const res = results[idx];
-          const it = res?.performance?.intervals?.[0] ?? null;
-          return {
-            date: d,
-            orders: it?.orders,
-            units: it?.units_sold,
-            gmv: Number(it?.gmv?.amount),
-          };
-        });
-
-        // pastikan terurut (dates dibuat ascend), langsung set
-        setChartData(mapped);
-        console.log("Chart mapped from per-day calls:", mapped);
-      }
-    } catch (err) {
-      console.error("loadChartLast7Days error:", err);
-    } finally {
-      setLoading(false);
-    }
   }
   const filteredOrders = orders.filter((order: any) => {
     const q = keyword.toLowerCase();
