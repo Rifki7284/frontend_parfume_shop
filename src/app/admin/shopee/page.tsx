@@ -328,9 +328,9 @@ export default function ShopeePage() {
                 <TableBody>
 
                   {loading ? (
-                    <TableRow>
-                      <TableCell colSpan={8} className="text-center py-6">
-                        <div className="flex items-center justify-center gap-2 text-muted-foreground">
+                    <TableRow className="dark:bg-slate-900">
+                      <TableCell colSpan={8} className="text-center py-6 dark:bg-slate-900">
+                        <div className="flex items-center justify-center gap-2 dark:bg-slate-900 text-muted-foreground">
                           <svg
                             className="animate-spin h-5 w-5 text-muted-foreground"
                             xmlns="http://www.w3.org/2000/svg"
@@ -537,7 +537,7 @@ export default function ShopeePage() {
 
               {/* Loading State - Mobile */}
               {loading && (
-                <div className="bg-white border border-gray-200 rounded-lg p-8">
+                <div className="bg-white border border-gray-200 dark:bg-slate-900 rounded-lg p-8">
                   <div className="flex flex-col items-center justify-center gap-3 text-muted-foreground">
                     <svg
                       className="animate-spin h-8 w-8 text-muted-foreground"

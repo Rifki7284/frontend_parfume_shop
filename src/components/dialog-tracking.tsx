@@ -1,15 +1,29 @@
+"use client"
+
 import { Badge } from "./ui/badge"
 import { Button } from "./ui/button"
-import { Dispatch, SetStateAction, useEffect, useState } from "react"
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "./ui/dialog"
-import { CheckCircle2, Clock } from "lucide-react"
-import { fetchOrderTrackingInfo, fetchOrderTrackingNumber } from "@/lib/shopee/api"
+import { useEffect, useState } from "react"
 import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from "./ui/dialog"
+import {
+    CheckCircle2,
+    Clock,
     Package,
     Truck,
     Box,
     Send,
+    XCircle,
+    AlertCircle,
+    AlertTriangle,
 } from "lucide-react"
+import { fetchOrderTrackingInfo, fetchOrderTrackingNumber } from "@/lib/shopee/api"
+
 interface DialogTrackingProps {
     trackOpen: boolean
     setTrackOpen: React.Dispatch<React.SetStateAction<boolean>>
@@ -18,12 +32,11 @@ interface DialogTrackingProps {
     carrier: string
     token: string
 }
+
 export interface TrackingInfo {
     update_time: number
     description: string
     logistics_status: string
-    icon?: React.ElementType // tambahan, kalau kamu mau assign icon di FE
-    label?: string           // tambahan, kalau kamu butuh nama step untuk UI
 }
 
 export interface TrackingResponse {
@@ -31,32 +44,54 @@ export interface TrackingResponse {
     order_sn: string
     tracking_info: TrackingInfo[]
 }
+
 interface TrackingResponseData {
     pickup_code: string
     tracking_number: string
     hint: string
 }
+
 const DialogTracking = ({
     serialNumber,
     setTrackOpen,
     trackOpen,
     product,
     carrier,
-    token
+    token,
 }: DialogTrackingProps) => {
-    const [loading, setLoading] = useState<boolean>(true)
-    const [activeStepIndex, setActiveStepIndex] = useState<number>(0)
+    const [loading, setLoading] = useState(true)
     const [data, setData] = useState<TrackingResponse | null>(null)
-    const [progressPercent, setProgressPercent] = useState<number>(0)
-    const canonicalSteps = [
-        { id: "step-1", label: "Diproses Seller", icon: Package, statuses: ["ORDER_CREATED"] },
-        { id: "step-2", label: "Di Hub / Gudang", icon: Truck, statuses: ["LOGISTICS_REQUEST_CREATED"] },
-        { id: "step-3", label: "Dalam Perjalanan", icon: Send, statuses: ["ORDER_PICKED_UP", "ORDER_SHIPPED"] },
-        { id: "step-4", label: "Antar Kurir", icon: CheckCircle2, statuses: ["ORDER_DELIVERED"] },
-    ]
-    const [isCanceled, setIsCanceled] = useState(false)
-    const [lastUpdate, setLastUpdate] = useState()
+    const [lastUpdate, setLastUpdate] = useState<number | null>(null)
     const [trackingNumber, setTrackingNumber] = useState<TrackingResponseData | null>(null)
+
+    // ✅ Peta status lengkap (13 status)
+    const statusMap: Record<string, { label: string; icon: any; stepOrder: number }> = {
+        LOGISTICS_NOT_START: { label: "Belum Diproses", icon: Clock, stepOrder: 0 },
+        LOGISTICS_PENDING_ARRANGE: { label: "Menunggu Pengaturan", icon: Clock, stepOrder: 0 },
+        LOGISTICS_READY: { label: "Siap Dikirim", icon: Package, stepOrder: 1 },
+        LOGISTICS_COD_REJECTED: { label: "COD Ditolak", icon: XCircle, stepOrder: 1 },
+        LOGISTICS_REQUEST_CREATED: { label: "Pengiriman Diatur", icon: Truck, stepOrder: 2 },
+        LOGISTICS_REQUEST_CANCELED: { label: "Dibatalkan", icon: XCircle, stepOrder: 2 },
+        LOGISTICS_PICKUP_RETRY: { label: "Menunggu Pickup Ulang", icon: Clock, stepOrder: 3 },
+        LOGISTICS_PICKUP_DONE: { label: "Diambil Kurir", icon: Box, stepOrder: 3 },
+        LOGISTICS_PICKUP_FAILED: { label: "Pickup Gagal", icon: XCircle, stepOrder: 3 },
+        LOGISTICS_DELIVERY_DONE: { label: "Terkirim", icon: CheckCircle2, stepOrder: 4 },
+        LOGISTICS_DELIVERY_FAILED: { label: "Pengiriman Gagal", icon: XCircle, stepOrder: 4 },
+        LOGISTICS_INVALID: { label: "Dibatalkan (Invalid)", icon: AlertCircle, stepOrder: 1 },
+        LOGISTICS_LOST: { label: "Paket Hilang", icon: AlertTriangle, stepOrder: 4 },
+    }
+
+    // Status yang menandakan pembatalan
+    const canceledStatuses = [
+        "LOGISTICS_INVALID",
+        "LOGISTICS_REQUEST_CANCELED",
+        "LOGISTICS_PICKUP_FAILED",
+        "LOGISTICS_DELIVERY_FAILED",
+        "LOGISTICS_LOST",
+        "LOGISTICS_COD_REJECTED",
+    ]
+
+    // ✅ Fetch data
     useEffect(() => {
         const getData = async () => {
             try {
@@ -64,55 +99,61 @@ const DialogTracking = ({
                 const response = data.response
                 setData(response)
 
-                // tandai cancel
-                setIsCanceled(response.logistics_status === "LOGISTICS_REQUEST_CANCELED")
-
                 if (response.tracking_info.length > 0) {
-                    const sorted = [...response.tracking_info].sort(
-                        (a, b) => b.update_time - a.update_time
-                    )
-                    setLastUpdate(sorted[0].update_time) // simpan angka timestamp
-                    // ambil semua status yang match di canonicalSteps
-                    const indices = response.tracking_info
-                        .map((t: { logistics_status: string }) =>
-                            canonicalSteps.findIndex((step) =>
-                                step.statuses.includes(t.logistics_status),
-                            ),
-                        )
-                        .filter((i: number) => i >= 0)
-
-                    let foundIndex = indices.length > 0 ? Math.max(...indices) : 0
-
-                    setActiveStepIndex(foundIndex)
-
-                    // hitung persentase (dibagi jumlah step - 1 supaya step pertama bukan langsung 100%)
-                    const denom = canonicalSteps.length - 1
-                    const percent = denom > 0 ? (foundIndex / denom) * 100 : 0
-                    setProgressPercent(percent)
-                } else {
-                    setActiveStepIndex(0)
-                    setProgressPercent(0)
+                    const sorted = [...response.tracking_info].sort((a, b) => b.update_time - a.update_time)
+                    setLastUpdate(sorted[0].update_time)
                 }
             } catch (err) {
                 console.error("Gagal fetch tracking info:", err)
+            } finally {
+                setLoading(false)
             }
         }
+
         const getTracking = async () => {
             try {
                 const data = await fetchOrderTrackingNumber(serialNumber, token)
-                const response = data.response
-                setTrackingNumber(response)
+                setTrackingNumber(data.response)
             } catch (err) {
-                console.error("Gagal fetch tracking info:", err)
+                console.error("Gagal fetch tracking number:", err)
             }
         }
-        if (serialNumber) {
-            getData()
-            getTracking()
-            setLoading(false)
-        }
-    }, [serialNumber])
 
+        if (serialNumber) Promise.all([getData(), getTracking()])
+    }, [serialNumber, token])
+
+    // Hitung status pengiriman
+    const sortedTracking = data?.tracking_info
+        ?.slice()
+        .sort((a, b) => a.update_time - b.update_time) || []
+
+    // Ambil status terbaru dari tracking_info atau fallback ke response.logistics_status
+    const latestStatus = sortedTracking.length > 0
+        ? sortedTracking[sortedTracking.length - 1]?.logistics_status
+        : data?.logistics_status || ""
+
+    const isCanceled = canceledStatuses.includes(latestStatus)
+
+    // Hitung step aktif berdasarkan stepOrder tertinggi
+    let activeStepOrder = 0
+    if (sortedTracking.length > 0) {
+        activeStepOrder = Math.max(...sortedTracking.map(t => statusMap[t.logistics_status]?.stepOrder ?? 0))
+    } else if (data?.logistics_status) {
+        // Jika tracking_info kosong, gunakan logistics_status utama
+        activeStepOrder = statusMap[data.logistics_status]?.stepOrder ?? 0
+    }
+
+    // Progress bar (0-4 steps = 0-100%)
+    const progressPercent = isCanceled ? 100 : (activeStepOrder / 4) * 100
+
+    // Step-step untuk stepper (5 langkah utama)
+    const stepperSteps = [
+        { order: 0, label: "Belum Diproses", icon: Clock },
+        { order: 1, label: "Siap Dikirim", icon: Package },
+        { order: 2, label: "Pengiriman Diatur", icon: Truck },
+        { order: 3, label: "Diambil Kurir", icon: Box },
+        { order: 4, label: "Terkirim", icon: CheckCircle2 },
+    ]
 
     return (
         <Dialog open={trackOpen} onOpenChange={setTrackOpen}>
@@ -120,279 +161,230 @@ const DialogTracking = ({
                 <DialogHeader>
                     <DialogTitle>Tracking Barang Shopee</DialogTitle>
                     <DialogDescription className="text-muted-foreground">
-                        {`Produk : ${product}`}
+                        Produk: {product}
                     </DialogDescription>
                 </DialogHeader>
 
-                {loading ? <div className="grid gap-6">
-                    {/* Skeleton Shipment summary */}
-                    <div className="grid gap-4 rounded-lg border border-border p-4 bg-card">
-                        <div className="flex items-start justify-between gap-4">
-                            <div className="space-y-2">
-                                <div className="h-3 w-16 bg-muted rounded animate-pulse" />
-                                <div className="h-4 w-32 bg-muted rounded animate-pulse" />
-                            </div>
-                            <div className="h-6 w-20 bg-muted rounded animate-pulse" />
-                        </div>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <div className="space-y-2">
-                                <div className="h-3 w-20 bg-muted rounded animate-pulse" />
-                                <div className="h-4 w-28 bg-muted rounded animate-pulse" />
-                            </div>
-                            <div className="space-y-2">
-                                <div className="h-3 w-24 bg-muted rounded animate-pulse" />
-                                <div className="h-4 w-28 bg-muted rounded animate-pulse" />
-                            </div>
-                            <div className="space-y-2">
-                                <div className="h-3 w-28 bg-muted rounded animate-pulse" />
-                                <div className="h-4 w-32 bg-muted rounded animate-pulse" />
-                            </div>
-                        </div>
+                {/* Loader */}
+                {loading ? (
+                    <div className="grid gap-6">
+                        <div className="h-40 rounded-lg bg-muted animate-pulse" />
+                        <div className="h-24 rounded-lg bg-muted animate-pulse" />
+                        <div className="h-48 rounded-lg bg-muted animate-pulse" />
                     </div>
-
-                    {/* Skeleton Stepper */}
-                    <div className="rounded-lg border border-border p-4 bg-card">
-                        <div className="grid grid-cols-4 gap-4">
-                            {Array.from({ length: 4 }).map((_, i) => (
-                                <div key={i} className="flex flex-col items-center text-center gap-2">
-                                    <div className="size-10 rounded-full bg-muted animate-pulse" />
-                                    <div className="h-3 w-16 bg-muted rounded animate-pulse" />
+                ) : (
+                    <div className="grid gap-6">
+                        {/* Summary */}
+                        <div className="border p-4 rounded-lg bg-card">
+                            <div className="flex items-start justify-between">
+                                <div>
+                                    <p className="text-sm text-muted-foreground">Kurir</p>
+                                    <p className="font-bold">{carrier}</p>
                                 </div>
-                            ))}
-                        </div>
-                        <div className="mt-4 h-2 w-full bg-muted rounded animate-pulse" />
-                    </div>
-
-                    {/* Skeleton Timeline */}
-                    <div className="rounded-lg border border-border p-4 bg-card">
-                        <div className="space-y-4">
-                            {Array.from({ length: 3 }).map((_, i) => (
-                                <div key={i} className="flex items-start gap-4">
-                                    <div className="size-4 rounded-full bg-muted animate-pulse" />
-                                    <div className="flex-1 space-y-2">
-                                        <div className="h-3 w-28 bg-muted rounded animate-pulse" />
-                                        <div className="h-3 w-44 bg-muted rounded animate-pulse" />
-                                    </div>
-                                    <div className="h-3 w-16 bg-muted rounded animate-pulse" />
+                                <Badge
+                                    variant={isCanceled ? "destructive" : "default"}
+                                    className="shrink-0"
+                                >
+                                    {isCanceled
+                                        ? "Dibatalkan"
+                                        : activeStepOrder === 4
+                                            ? "Terkirim"
+                                            : "Dalam Proses"}
+                                </Badge>
+                            </div>
+                            <div className="mt-3 grid grid-cols-2 gap-4 text-sm">
+                                <div>
+                                    <p className="text-muted-foreground">Nomor Resi</p>
+                                    <p className="font-semibold select-all">
+                                        {trackingNumber?.tracking_number || "-"}
+                                    </p>
                                 </div>
-                            ))}
-                        </div>
-                    </div>
-                </div> : <div className="grid gap-6">
-                    {/* Shipment summary */}
-                    <div className="grid gap-4 rounded-lg border border-border p-4 bg-card text-card-foreground">
-                        <div className="flex items-start justify-between gap-4">
-                            <div className="space-y-1">
-                                <p className="text-sm text-muted-foreground">Kurir</p>
-                                <p className="font-bold">{carrier}</p>
-                            </div>
-                            <Badge variant="secondary" className="shrink-0">
-                                Status: {activeStepIndex < 3 ? "Dalam Proses" : "Antar Kurir"}
-                            </Badge>
-                        </div>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <div>
-                                <p className="text-sm text-muted-foreground">Nomor Resi</p>
-                                <p className="font-bold select-all">{trackingNumber ? trackingNumber.tracking_number : "-"}</p>
-                            </div>
-                            {/* <div>
-                                <p className="text-sm text-muted-foreground">Perkiraan Tiba</p>
-                                <p className="font-medium">2-3 hari kerja</p>
-                            </div> */}
-                            <div>
-                                <p className="text-sm text-muted-foreground">Terakhir Diperbarui</p>
-                                <p className="font-bold">  {lastUpdate ? new Date(lastUpdate * 1000).toLocaleString("id-ID", {
-                                    dateStyle: "medium",
-                                    timeStyle: "short",
-                                    timeZone: "Asia/Jakarta"
-                                }) : "-"}</p>
+                                <div>
+                                    <p className="text-muted-foreground">Terakhir Diperbarui</p>
+                                    <p className="font-semibold">
+                                        {lastUpdate
+                                            ? new Date(lastUpdate * 1000).toLocaleString("id-ID", {
+                                                dateStyle: "medium",
+                                                timeStyle: "short",
+                                                timeZone: "Asia/Jakarta",
+                                            })
+                                            : "-"}
+                                    </p>
+                                </div>
                             </div>
                         </div>
-                    </div>
 
-                    {/* Resi input */}
-                    {/* <div className="grid gap-2">
-                        <Label htmlFor="resi">Nomor Resi</Label>
-                        <div className="flex gap-2">
-                            <Input
-                                id="resi"
-                                placeholder="Masukkan nomor resi"
-                                value={trackingNumber}
-                                onChange={(e) => setTrackingNumber(e.target.value)}
-                                className="bg-card text-card-foreground"
-                            />
-                            <Button
-                                onClick={() => {
-                                    if (!trackingNumber) {
-                                        const rnd = Math.floor(Math.random() * 1_000_000_000)
-                                            .toString()
-                                            .padStart(9, "0")
-                                        setTrackingNumber(rnd)
-                                    }
-                                }}
-                                variant="outline"
-                            >
-                                Isi Otomatis
-                            </Button>
+                        {/* Stepper (5 langkah utama) */}
+                        <div className="border p-4 rounded-lg bg-card">
+                            <div className="grid grid-cols-5 gap-4">
+                                {stepperSteps.map((step) => {
+                                    const done = step.order <= activeStepOrder
+                                    const Icon = step.icon
+                                    return (
+                                        <div
+                                            key={step.order}
+                                            className="flex flex-col items-center text-center gap-2"
+                                        >
+                                            <div
+                                                className={`size-10 rounded-full flex items-center justify-center border transition-colors ${done
+                                                    ? isCanceled
+                                                        ? "bg-red-600/10 border-red-600 text-red-600"
+                                                        : "bg-orange-600/10 border-orange-600 text-orange-600"
+                                                    : "bg-muted border-border text-muted-foreground"
+                                                    }`}
+                                            >
+                                                {done ? (
+                                                    isCanceled && step.order === activeStepOrder ? (
+                                                        <XCircle className="h-5 w-5" />
+                                                    ) : (
+                                                        <CheckCircle2 className="h-5 w-5" />
+                                                    )
+                                                ) : (
+                                                    <Icon className="h-5 w-5" />
+                                                )}
+                                            </div>
+                                            <p
+                                                className={`text-xs ${done
+                                                    ? "text-foreground font-medium"
+                                                    : "text-muted-foreground"
+                                                    }`}
+                                            >
+                                                {step.label}
+                                            </p>
+                                        </div>
+                                    )
+                                })}
+                            </div>
+
+                            <div className="mt-4">
+                                <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
+                                    <div
+                                        className={`h-full transition-all rounded-full ${isCanceled ? "bg-red-500" : "bg-orange-600"
+                                            }`}
+                                        style={{ width: `${progressPercent}%` }}
+                                    />
+                                </div>
+                                <div className="mt-2 flex justify-between text-xs text-muted-foreground">
+                                    <span>Mulai</span>
+                                    <span>Selesai</span>
+                                </div>
+                            </div>
                         </div>
-                    </div> */}
 
-                    {/* Horizontal stepper */}
-                    <div className="rounded-lg border border-border p-4 bg-card text-card-foreground">
-                        <div className="grid grid-cols-4 gap-4">
-                            {data
-                                ? data.tracking_info
-                                    .slice()
-                                    .sort((a, b) => a.update_time - b.update_time) // urut lama -> baru
-                                    .map((s, idx) => {
-                                        const isLast = idx === data.tracking_info.length - 1
-                                        const done = !isLast && idx <= activeStepIndex
+                        {/* Timeline */}
+                        <div className="border p-4 rounded-lg bg-card">
+                            <p className="text-sm font-medium mb-3">Riwayat Pengiriman</p>
 
-                                        // mapping icon sesuai status
-                                        const statusIconMap: Record<string, React.ElementType> = {
-                                            ORDER_CREATED: Package,              // 📦 paket dibuat
-                                            LOGISTICS_REQUEST_CREATED: Truck,    // 🚚 permintaan pengiriman
-                                            ORDER_PICKED_UP: Box,                // 📤 diambil kurir
-                                            ORDER_SHIPPED: Send,                 // 🚀 dikirim
-                                            ORDER_DELIVERED: CheckCircle2,       // ✅ sampai
-                                            UNKNOWN: Clock,                      // fallback
+
+                            {sortedTracking.length > 0 ? (
+                                <ol className="relative border-s border-dashed border-border">
+                                    {sortedTracking.map((t, idx) => {
+                                        const isLatest = idx === sortedTracking.length - 1
+                                        const statusInfo = statusMap[t.logistics_status] || {
+                                            label: t.logistics_status,
+                                            icon: Clock,
+                                            stepOrder: 0,
                                         }
+                                        const Icon = statusInfo.icon
 
-                                        const Icon = statusIconMap[s.logistics_status] || Clock
+                                        const waktu = new Date(t.update_time * 1000).toLocaleTimeString("id-ID", {
+                                            hour: "2-digit",
+                                            minute: "2-digit",
+                                            timeZone: "Asia/Jakarta",
+                                        })
 
-                                        // ubah status ke bahasa Indo
-                                        const statusMap: Record<string, string> = {
-                                            ORDER_CREATED: "Pesanan Dibuat",
-                                            LOGISTICS_REQUEST_CREATED: "Permintaan Pengiriman",
-                                            ORDER_PICKED_UP: "Paket Diambil Kurir",
-                                            ORDER_SHIPPED: "Dalam Perjalanan",
-                                            ORDER_DELIVERED: "Pesanan Terkirim",
-                                            UNKNOWN: "Status Tidak Diketahui",
-                                        }
-
-                                        const statusLabel = statusMap[s.logistics_status] || s.logistics_status
+                                        const tanggal = new Date(t.update_time * 1000).toLocaleDateString("id-ID", {
+                                            day: "numeric",
+                                            month: "short",
+                                            year: "numeric",
+                                        })
 
                                         return (
-                                            <div key={`${s.logistics_status}-${s.update_time}`} className="flex flex-col items-center text-center gap-2">
-                                                <div
-                                                    className={`size-10 rounded-full flex items-center justify-center border transition-colors
-                ${done ? "bg-orange-600/10 border-orange-600 text-orange-600" : "bg-muted border-border text-muted-foreground"}`}
-                                                >
-                                                    {done ? <CheckCircle2 className="h-5 w-5" /> : <Icon className="h-5 w-5" />}
+                                            <li key={`${t.logistics_status}-${idx}`} className="ms-4 py-3 relative">
+                                                <span
+                                                    className={`absolute -start-2 top-4 rounded-full border flex items-center justify-center ${isLatest
+                                                        ? isCanceled
+                                                            ? "bg-red-600 border-red-600 size-4"
+                                                            : "bg-orange-600 border-orange-600 size-4"
+                                                        : "bg-orange-600/10 border-orange-600 size-3"
+                                                        }`}
+                                                />
+                                                <div className="flex justify-between gap-4">
+                                                    <div className="flex-1">
+                                                        <div className="flex items-center gap-2">
+                                                            <Icon className={`h-4 w-4 ${isLatest ? "text-foreground" : "text-muted-foreground"
+                                                                }`} />
+                                                            <p className={`text-sm font-medium ${isLatest ? "text-foreground" : "text-muted-foreground"
+                                                                }`}>
+                                                                {statusInfo.label}
+                                                            </p>
+                                                        </div>
+                                                        {t.description && (
+                                                            <p className="text-xs text-muted-foreground mt-1">
+                                                                {t.description}
+                                                            </p>
+                                                        )}
+                                                    </div>
+                                                    <div className="text-right">
+                                                        <div className="text-xs flex items-center gap-1 text-muted-foreground justify-end">
+                                                            <Clock className="w-3.5 h-3.5" />
+                                                            {waktu}
+                                                        </div>
+                                                        <p className="text-xs text-muted-foreground mt-0.5">
+                                                            {tanggal}
+                                                        </p>
+                                                    </div>
                                                 </div>
-                                                <p className={`text-xs ${done ? "text-foreground" : "text-muted-foreground"}`}>
-                                                    {statusLabel}
-                                                </p>
-                                            </div>
+                                            </li>
                                         )
-                                    })
-                                : ""}
-
-                        </div>
-                        {/* Progress bar */}
-                        <div className="mt-4">
-                            <div className="h-2 w-full rounded-full bg-muted relative overflow-hidden">
-                                <div
-                                    className={`h-full rounded-full transition-all ${isCanceled ? "bg-red-500" : "bg-orange-600"}`}
-                                    style={{ width: `${progressPercent}%` }}
-                                    aria-valuenow={progressPercent}
-                                    aria-valuemin={0}
-                                    aria-valuemax={100}
-                                    role="progressbar"
-                                />
-                            </div>
-                            <div className="mt-2 flex items-center justify-between text-xs text-muted-foreground">
-                                <span>Mulai</span>
-                                <span>Selesai</span>
-                            </div>
+                                    })}
+                                </ol>
+                            ) : (
+                                <div className="py-8 text-center">
+                                    <div className="flex flex-col items-center gap-3">
+                                        {isCanceled ? (
+                                            <>
+                                                <div className="size-12 rounded-full bg-red-100 flex items-center justify-center">
+                                                    <XCircle className="h-6 w-6 text-red-600" />
+                                                </div>
+                                                <div>
+                                                    <p className="font-medium text-red-700">
+                                                        {statusMap[latestStatus]?.label || "Pesanan Dibatalkan"}
+                                                    </p>
+                                                    <p className="text-sm text-muted-foreground mt-1">
+                                                        Pesanan ini telah dibatalkan
+                                                    </p>
+                                                </div>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <div className="size-12 rounded-full bg-muted flex items-center justify-center">
+                                                    <Clock className="h-6 w-6 text-muted-foreground" />
+                                                </div>
+                                                <div>
+                                                    <p className="font-medium">Belum Ada Riwayat</p>
+                                                    <p className="text-sm text-muted-foreground mt-1">
+                                                        Informasi pengiriman belum tersedia
+                                                    </p>
+                                                </div>
+                                            </>
+                                        )}
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     </div>
+                )}
 
-                    {/* Timeline */}
-                    <div className="rounded-lg border border-border p-4 bg-card text-card-foreground">
-                        <p className="text-sm font-medium mb-3">Status Pengiriman</p>
-                        <ol className="relative border-s border-dashed border-border">
-                            {data?.tracking_info.map((t, idx) => {
-                                const reached = idx <= activeStepIndex
 
-                                // Format jam Indonesia (WIB)
-                                const waktu = new Date(t.update_time * 1000).toLocaleTimeString("id-ID", {
-                                    timeZone: "Asia/Jakarta",
-                                    hour: "2-digit",
-                                    minute: "2-digit",
-                                })
-
-                                // Translate status agar lebih ramah
-                                const statusMap: Record<string, string> = {
-                                    ORDER_CREATED: "Pesanan Dibuat",
-                                    LOGISTICS_REQUEST_CREATED: "Permintaan Pengiriman Dibuat",
-                                    ORDER_PICKED_UP: "Paket Telah Diambil",
-                                    ORDER_SHIPPED: "Dalam Perjalanan",
-                                    ORDER_DELIVERED: "Pesanan Terkirim",
-                                }
-
-                                const statusLabel = statusMap[t.logistics_status] || t.logistics_status
-
-                                return (
-                                    <li key={t.logistics_status} className="ms-4 py-3">
-                                        <span
-                                            className={`absolute -start-2 top-4 flex items-center justify-center rounded-full border
-                                            ${reached ? "bg-orange-600 text-white border-orange-600" : "bg-muted text-muted-foreground border-border"} size-4`}
-                                        />
-                                        <div className="flex items-start justify-between gap-4">
-                                            <div className="w-[80%]">
-                                                <p className={`text-sm font-medium ${reached ? "text-foreground" : "text-muted-foreground"}`}>
-                                                    {statusLabel}
-                                                </p>
-                                                <p className="text-xs text-muted-foreground">{t.description}</p>
-                                            </div>
-                                            <div className="w-auto flex items-center gap-2 text-xs text-muted-foreground">
-                                                <Clock className="h-3.5 w-3.5" />
-                                                <span>{waktu} WIB</span>
-                                            </div>
-                                        </div>
-                                    </li>
-                                )
-                            })}
-
-                        </ol>
-                        {/* {!trackingNumber && (
-                            <p className="mt-2 text-xs text-muted-foreground">
-                                Masukkan nomor resi untuk melihat estimasi yang lebih akurat.
-                            </p>
-                        )} */}
-                    </div>
-
-                    {/* Map placeholder */}
-                    {/* <div className="rounded-lg border border-border overflow-hidden">
-                        <img
-                            src="/map-preview-for-delivery-route.jpg"
-                            alt="Pratinjau peta rute pengiriman"
-                            className="w-full h-48 object-cover"
-                        />
-                    </div> */}
-                </div>}
-
-                <DialogFooter className="gap-2 sm:gap-0">
-                    <Button
-                        variant="outline"
-                        onClick={() => {
-                            setTrackOpen(false)
-                        }}
-                    >
+                <DialogFooter>
+                    <Button variant="outline" onClick={() => setTrackOpen(false)}>
                         Tutup
                     </Button>
-                    {/* <Button
-                        onClick={() => {
-                            setTrackOpen(true)
-                        }}
-                        disabled={!trackingNumber}
-                    >
-                        Cek Status
-                    </Button> */}
                 </DialogFooter>
             </DialogContent>
         </Dialog>
     )
 }
+
 export default DialogTracking

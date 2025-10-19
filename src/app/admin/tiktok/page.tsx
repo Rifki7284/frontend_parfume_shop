@@ -449,8 +449,8 @@ export default function TikTokPage() {
               <TableBody>
                 {tableLoading ? (
                   <TableRow>
-                    <TableCell colSpan={8} className="text-center py-6">
-                      <div className="flex items-center justify-center gap-2 text-muted-foreground">
+                    <TableCell colSpan={8} className="text-center py-6 dark:!bg-slate-900">
+                      <div className="flex items-center justify-center dark:!bg-slate-900 gap-2 text-muted-foreground">
                         <svg
                           className="animate-spin h-5 w-5 text-muted-foreground"
                           xmlns="http://www.w3.org/2000/svg"
@@ -563,7 +563,7 @@ export default function TikTokPage() {
           {/* Mobile & Tablet Card View */}
           <div className="lg:hidden space-y-4">
             {tableLoading ? (
-              <div className="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg p-8">
+              <div className="bg-white  border dark:!bg-slate-900 border-gray-200 dark:border-slate-700 rounded-lg p-8">
                 <div className="flex flex-col items-center justify-center gap-3 text-muted-foreground">
                   <svg
                     className="animate-spin h-8 w-8 text-muted-foreground"
