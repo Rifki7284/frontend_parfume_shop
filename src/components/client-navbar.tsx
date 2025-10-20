@@ -1,6 +1,6 @@
 
 import Image from "next/image";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 interface ProductImage {
     id: number
@@ -34,7 +34,9 @@ const ClientNavbar = () => {
             element.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
     };
+
     const api = process.env.NEXT_PUBLIC_API_URL
+    const pathname = usePathname();
     const handleSearch = async () => {
         try {
 
@@ -216,21 +218,31 @@ const ClientNavbar = () => {
                 <div className="max-w-7xl mx-auto flex justify-between items-center px-10">
                     <a href="#" className="font-serif text-3xl font-semibold text-red-900 tracking-wider">WANGY</a>
                     <ul className="hidden md:flex list-none gap-12">
-                        {[
-                            { href: 'home', label: 'Home' },
-                            { href: 'collections', label: 'Collections' },
-                            { href: 'about', label: 'Our Story' },
-                            { href: 'contact', label: 'Contact' }
-                        ].map(item => (
-                            <li key={item.href}>
-                                <button
-                                    onClick={() => scrollToSection(item.href)}
-                                    className="text-red-900 font-normal text-sm tracking-wide relative transition-all duration-300 hover:after:w-full after:content-[''] after:absolute after:w-0 after:h-0.5 after:-bottom-2 after:left-0 after:bg-yellow-400 after:transition-all after:duration-300"
-                                >
-                                    {item.label}
-                                </button>
-                            </li>
-                        ))}
+
+                        <li>
+                            <button
+                                onClick={() => pathname === "/home" ? scrollToSection("home") : router.push("home")}
+                                className="text-red-900 font-normal text-sm tracking-wide relative transition-all duration-300 hover:after:w-full after:content-[''] after:absolute after:w-0 after:h-0.5 after:-bottom-2 after:left-0 after:bg-yellow-400 after:transition-all after:duration-300"
+                            >
+                                Home
+                            </button>
+                        </li>
+                        <li>
+                            <button
+                                onClick={() => scrollToSection("collections")}
+                                className="text-red-900 font-normal text-sm tracking-wide relative transition-all duration-300 hover:after:w-full after:content-[''] after:absolute after:w-0 after:h-0.5 after:-bottom-2 after:left-0 after:bg-yellow-400 after:transition-all after:duration-300"
+                            >
+                                Collections
+                            </button>
+                        </li>
+                        <li >
+                            <button
+                                onClick={() => router.push("product")}
+                                className={`text-red-900 font-normal ${pathname === "/product" ? "after:w-full" : ""} text-sm tracking-wide relative transition-all duration-300 hover:after:w-full after:content-[''] after:absolute after:w-0 after:h-0.5 after:-bottom-2 after:left-0 after:bg-yellow-400 after:transition-all after:duration-300`}
+                            >
+                                Product
+                            </button>
+                        </li>
                     </ul>
                     <div className="flex gap-7 items-center">
                         <div className="relative">

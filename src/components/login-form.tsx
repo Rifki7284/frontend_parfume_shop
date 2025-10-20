@@ -45,7 +45,7 @@ export function LoginForm() {
     setIsLoading(false)
 
     if (result?.error) {
-      console.error("Login failed:", result.error)
+      console.log("Login failed:", result)
       alert("Login gagal: " + result.error)
     } else {
       router.push("/admin")

@@ -317,10 +317,10 @@ const Page = () => {
                                     </select>
                                 </div>
                             </div>
+                            <div  className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                                {loading ? <LoadingSpinner /> : products.length > 0 ? products.map((product, id) => (
 
-                            {loading ? <LoadingSpinner /> : products.length > 0 ? products.map((product, id) => (
-                                <div key={id} className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
-                                    <div className="group bg-gradient-to-br from-cream-beige to-warm-beige rounded-2xl overflow-hidden transition-all duration-700 cursor-pointer border-2 border-transparent hover:border-primary-gold hover:-translate-y-4 hover:shadow-2xl hover:shadow-deep-maroon/20">
+                                    <div key={id} className="group bg-gradient-to-br from-cream-beige to-warm-beige rounded-2xl overflow-hidden transition-all duration-700 cursor-pointer border-2 border-transparent hover:border-primary-gold hover:-translate-y-4 hover:shadow-2xl hover:shadow-deep-maroon/20">
                                         <div className="relative aspect-[4/5] bg-gradient-to-br from-white to-soft-beige flex items-center justify-center overflow-hidden border-b-2 border-primary-gold">
                                             <Image
                                                 src={product.images[0].image}
@@ -352,14 +352,14 @@ const Page = () => {
                                             </button>
                                         </div>
                                     </div>
-                                </div>
-                            )) : <EmptyState
-                                min={draftMin}
-                                max={draftMax}
-                                onClearFilters={handleClearFilters}
-                            />}
 
+                                )) : <EmptyState
+                                    min={draftMin}
+                                    max={draftMax}
+                                    onClearFilters={handleClearFilters}
+                                />}
 
+                            </div>
                             <div className="flex items-center gap-3 mt-16">
                                 <Pagination>
                                     <PaginationContent>

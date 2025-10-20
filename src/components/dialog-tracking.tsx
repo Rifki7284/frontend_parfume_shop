@@ -309,7 +309,7 @@ const DialogTracking = ({
                                                         : "bg-orange-600/10 border-orange-600 size-3"
                                                         }`}
                                                 />
-                                                <div className="flex justify-between gap-4">
+                                                <div className="flex justify-between gap-4 ml-5">
                                                     <div className="flex-1">
                                                         <div className="flex items-center gap-2">
                                                             <Icon className={`h-4 w-4 ${isLatest ? "text-foreground" : "text-muted-foreground"
