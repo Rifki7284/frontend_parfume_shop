@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Line, LineChart, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from "recharts"
-import { useSession } from "next-auth/react"
+import { signOut, useSession } from "next-auth/react"
 import { ChevronDown, CreditCard, DollarSign, DownloadIcon, MapPin, MoreVertical, Package, ShoppingCart, Sparkles, TrendingDown, Truck, Users } from "lucide-react"
 import { fetchOrders } from "@/lib/tiktok/order"
 import {
@@ -27,6 +27,7 @@ import { StatsCard } from "@/components/stats-card"
 import ModernGlassPreloader from "@/components/modern-glass-preloader"
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination"
 import { ShopeeStatsResponse } from "../shopee/page"
+import { useRouter } from "next/navigation"
 
 
 // Inline SVG components
@@ -159,6 +160,19 @@ export default function TikTokPage() {
   }
 
   const [initialized, setInitialized] = useState(false);
+  const router = useRouter();
+
+  useEffect(() => {
+    // Jika tidak login
+    if (status === "unauthenticated") {
+      router.push("/"); // redirect ke login
+    }
+
+    // Jika session sudah expired
+    if (session?.error === "AccessTokenExpired" || session?.error === "TokenExpired") {
+      signOut({ redirect: true, callbackUrl: "/" });
+    }
+  }, [session, status, router]);
 
   useEffect(() => {
     if (session?.user?.accessToken && !initialized) {

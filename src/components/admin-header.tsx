@@ -54,8 +54,13 @@ const SearchIcon = () => (
   </svg>
 )
 
-const LogOutIcon = () => (
-  <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+const LogOutIcon = ({ className = "" }: { className?: string }) => (
+  <svg
+    className={`h-5 w-5 ${className}`}
+    fill="none"
+    stroke="currentColor"
+    viewBox="0 0 24 24"
+  >
     <path
       strokeLinecap="round"
       strokeLinejoin="round"
@@ -63,7 +68,7 @@ const LogOutIcon = () => (
       d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
     />
   </svg>
-)
+);
 
 const Clock = () => {
   const [time, setTime] = useState<Date | null>(null)
@@ -76,14 +81,14 @@ const Clock = () => {
 
   if (!time) {
     return (
-      <div className="hidden md:flex items-center text-sm text-slate-600 bg-slate-50 px-3 py-1 rounded-md">
+      <div className="hidden md:flex items-center text-sm text-slate-600 dark:text-slate-400 bg-slate-50 dark:bg-slate-800 px-3 py-1 rounded-md transition-colors">
         --:--:--
       </div>
     )
   }
 
   return (
-    <div className="hidden md:flex items-center text-sm text-slate-600 bg-slate-50 px-3 py-1 rounded-md">
+    <div className="hidden md:flex items-center text-sm text-slate-600 dark:text-slate-400 bg-slate-50 dark:bg-slate-800 px-3 py-1 rounded-md transition-colors">
       {time.toLocaleTimeString("id-ID", {
         hour: "2-digit",
         minute: "2-digit",
@@ -99,6 +104,7 @@ export function LogoutModal({
   onClose,
   onConfirm,
 }: { isOpen: boolean; onClose: () => void; onConfirm: () => void }) {
+  const { theme } = useTheme();
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent>
@@ -111,7 +117,13 @@ export function LogoutModal({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="flex items-center justify-center w-12 h-12 mx-auto mb-4 bg-red-100 rounded-full">
+        <div
+          className={`
+          flex items-center justify-center w-12 h-12 mx-auto mb-4 rounded-full
+          transition-colors duration-300
+          ${theme === "dark" ? "bg-red-900/30 text-red-400" : "bg-red-100 text-red-700"}
+        `}
+        >
           <LogOutIcon />
         </div>
 

@@ -18,7 +18,7 @@ import {
   Tooltip,
 } from "recharts"
 import { TrendingUp, TrendingDown, DollarSign, ShoppingCart, Users, Package, ShoppingBag } from "lucide-react"
-import { useSession } from "next-auth/react"
+import { signOut, useSession } from "next-auth/react"
 import ModernGlassPreloader from "@/components/modern-glass-preloader"
 import dayjs from "dayjs"
 import { useEffect, useState } from "react"
@@ -26,6 +26,7 @@ import { fetchPerformance } from "@/lib/tiktok/shopPerformance"
 import { mapPerformanceWithChange } from "@/lib/tiktok/mapPerformanceWithChange"
 import { StatsCard } from "@/components/stats-card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { useRouter } from "next/navigation"
 // const salesData = [
 //   { month: "Jan", tiktok: 4000, shopee: 2400, total: 6400 },
 //   { month: "Feb", tiktok: 3000, shopee: 1398, total: 4398 },
@@ -241,6 +242,7 @@ export default function AdminDashboard() {
   ]
   useEffect(() => {
     if (session?.user?.accessToken != undefined) {
+      console.log(status)
       setLoadStats(true)
       loadStatsTiktok()
       loadStatsShopee()
@@ -249,6 +251,19 @@ export default function AdminDashboard() {
       setLoadStats(false)
     }
   }, [status, session?.user?.accessToken, selectedMonth, selectedYear]);
+  const router = useRouter();
+
+  useEffect(() => {
+    // Jika tidak login
+    if (status === "unauthenticated") {
+      router.push("/"); // redirect ke login
+    }
+
+    // Jika session sudah expired
+    if (session?.error === "AccessTokenExpired" || session?.error === "TokenExpired") {
+      signOut({ redirect: true, callbackUrl: "/" });
+    }
+  }, [session, status, router]);
   if (status == "loading") return <ModernGlassPreloader />;
   return (
     <div className="min-h-screen bg-white dark:bg-gray-950">

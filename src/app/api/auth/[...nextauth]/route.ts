@@ -92,7 +92,7 @@ export const authOptions: AuthOptions = {
      ============================================================ */
   callbacks: {
     async jwt({ token, user }) {
-      // Login pertama
+      // Saat login pertama kali
       if (user) {
         token.id = user.id;
         token.role = user.role;
@@ -106,6 +106,11 @@ export const authOptions: AuthOptions = {
         return token;
       }
 
+      // 🧠 Jika token.accessTokenExpires belum ada, jangan logout langsung
+      if (!token.accessTokenExpires) {
+        return token;
+      }
+
       // Kalau access token masih valid
       if (Date.now() < (token.accessTokenExpires as number)) {
         return token;
@@ -116,6 +121,11 @@ export const authOptions: AuthOptions = {
         if (Date.now() < (token.refreshExpiresAt as number)) {
           return await refreshAccessToken(token);
         } else {
+          console.log("JWT callback:", {
+            accessExp: token.accessTokenExpires,
+            now: Date.now(),
+            hasUser: !!user,
+          });
           return { ...token, error: "RefreshTokenExpired" };
         }
       }
@@ -133,17 +143,16 @@ export const authOptions: AuthOptions = {
         session.user.accessToken = token.accessToken as string;
         session.user.refreshToken = token.refreshToken as string;
         session.user.remember = token.remember as boolean;
-        (session as any).error = token.error;
+        (session as any).error = token.error ?? null; // hanya isi kalau ada
       }
 
-      // Hitung durasi sesi
-      const defaultRememberAge = 30 * 24 * 60 * 60; // 30 hari (detik)
+      const defaultRememberAge = 30 * 24 * 60 * 60; // 30 hari
       const rememberMaxAge =
         token.refreshExpiresAt && token.refreshExpiresAt > Date.now()
           ? Math.floor((token.refreshExpiresAt - Date.now()) / 1000)
           : defaultRememberAge;
 
-      const maxAge = token.remember ? rememberMaxAge : 60 * 60; // 1 jam kalau tidak remember
+      const maxAge = token.remember ? rememberMaxAge : 60 * 60;
       session.maxAge = maxAge;
 
       return session;

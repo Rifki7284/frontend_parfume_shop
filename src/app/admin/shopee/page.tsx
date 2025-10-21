@@ -20,9 +20,10 @@ import { useOrderList } from "@/lib/shopee/useOrderList"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { ChevronDown, CreditCard, DollarSign, MapPin, MoreVertical, Package, ShoppingCart, Truck, Users } from "lucide-react"
 import DialogTracking from "@/components/dialog-tracking"
-import { useSession } from "next-auth/react"
+import { signOut, useSession } from "next-auth/react"
 import ModernGlassPreloader from "@/components/modern-glass-preloader"
 import { StatsCard } from "@/components/stats-card"
+import { useRouter } from "next/navigation"
 const Eye = ({ className }: { className?: string }) => (
   <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
     <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
@@ -142,6 +143,19 @@ export default function ShopeePage() {
 
     }
   }, [status, session?.user?.accessToken]);
+  const router = useRouter();
+
+  useEffect(() => {
+    // Jika tidak login
+    if (status === "unauthenticated") {
+      router.push("/"); // redirect ke login
+    }
+
+    // Jika session sudah expired
+    if (session?.error === "AccessTokenExpired" || session?.error === "TokenExpired") {
+      signOut({ redirect: true, callbackUrl: "/" });
+    }
+  }, [session, status, router]);
   if (status == "loading") return <ModernGlassPreloader />;
 
   return (

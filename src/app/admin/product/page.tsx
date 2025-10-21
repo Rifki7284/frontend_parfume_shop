@@ -10,7 +10,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { PlusCircle, Edit, Trash2, ImageIcon, UploadCloud, Search, ChevronDown, Package, TrendingUp, AlertTriangle, X, ExternalLink, Image, SearchIcon } from "lucide-react"
-import { useSession } from "next-auth/react"
+import { signOut, useSession } from "next-auth/react"
 import ModernGlassPreloader from "@/components/modern-glass-preloader"
 import toast, { Toaster } from 'react-hot-toast';
 import {
@@ -21,6 +21,7 @@ import {
     PaginationNext,
 } from "@/components/ui/pagination"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { useRouter } from "next/navigation"
 interface DeleteConfirmationDialogProps {
     isOpen: boolean
     onClose: () => void
@@ -428,7 +429,19 @@ export default function ProductsPage() {
         setDeletedImages([])
         setCurrentProduct(null)
     }
+    const router = useRouter();
 
+    useEffect(() => {
+        // Jika tidak login
+        if (status === "unauthenticated") {
+            router.push("/"); // redirect ke login
+        }
+
+        // Jika session sudah expired
+        if (session?.error === "AccessTokenExpired" || session?.error === "TokenExpired") {
+            signOut({ redirect: true, callbackUrl: "/" });
+        }
+    }, [session, status, router]);
     if (status == "loading") return <ModernGlassPreloader />;
 
     return (
