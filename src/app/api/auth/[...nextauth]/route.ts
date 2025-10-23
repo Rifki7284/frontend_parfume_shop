@@ -23,7 +23,7 @@ async function refreshAccessToken(token: any) {
     return {
       ...token,
       accessToken: data.access_token,
-      accessTokenExpires: Date.now() + data.expires_in * 1000,
+      accessTokenExpires: Date.now() + data.expires_in * 1000, // Django = 4 jam
       refreshToken: data.refresh_token ?? token.refreshToken,
     };
   } catch (error) {
@@ -47,20 +47,17 @@ export const authOptions: AuthOptions = {
       async authorize(credentials) {
         if (!credentials?.username || !credentials?.password) return null;
 
-        const res = await fetch(
-          "http://localhost:8000/api/account/login/staff",
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/x-www-form-urlencoded" },
-            body: new URLSearchParams({
-              username: credentials.username,
-              password: credentials.password,
-              grant_type: "password",
-              client_id: process.env.NEXT_PUBLIC_DJANGO_CLIENT_ID ?? "",
-              client_secret: process.env.NEXT_PUBLIC_DJANGO_CLIENT_SECRET ?? "",
-            }),
-          }
-        );
+        const res = await fetch("http://localhost:8000/api/account/login/staff", {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: new URLSearchParams({
+            username: credentials.username,
+            password: credentials.password,
+            grant_type: "password",
+            client_id: process.env.NEXT_PUBLIC_DJANGO_CLIENT_ID ?? "",
+            client_secret: process.env.NEXT_PUBLIC_DJANGO_CLIENT_SECRET ?? "",
+          }),
+        });
 
         if (!res.ok) return null;
         const data = await res.json();
@@ -68,9 +65,10 @@ export const authOptions: AuthOptions = {
         const remember =
           credentials.remember === "true" || credentials.remember === "on";
 
+        // Gunakan nilai dari Django (4 jam dan 7 hari)
         const refreshExpiresIn = data.refresh_expires_in
           ? data.refresh_expires_in * 1000
-          : 30 * 24 * 60 * 60 * 1000; // default 30 hari
+          : 7 * 24 * 60 * 60 * 1000; // fallback ke 7 hari
 
         return {
           id: data.user.id,
@@ -79,9 +77,9 @@ export const authOptions: AuthOptions = {
           role: data.user.is_staff ? "staff" : "user",
           accessToken: data.access_token,
           refreshToken: data.refresh_token,
-          accessTokenExpires: Date.now() + data.expires_in * 1000,
+          accessTokenExpires: Date.now() + data.expires_in * 1000, // 4 jam
           remember,
-          refreshExpiresAt: Date.now() + refreshExpiresIn,
+          refreshExpiresAt: Date.now() + refreshExpiresIn, // 7 hari
         };
       },
     }),
@@ -92,7 +90,6 @@ export const authOptions: AuthOptions = {
      ============================================================ */
   callbacks: {
     async jwt({ token, user }) {
-      // Saat login pertama kali
       if (user) {
         token.id = user.id;
         token.role = user.role;
@@ -106,32 +103,18 @@ export const authOptions: AuthOptions = {
         return token;
       }
 
-      // 🧠 Jika token.accessTokenExpires belum ada, jangan logout langsung
-      if (!token.accessTokenExpires) {
-        return token;
+      if (!token.accessTokenExpires) return token;
+
+      // Jika access token masih valid (4 jam)
+      if (Date.now() < (token.accessTokenExpires as number)) return token;
+
+      // Jika access token expired tapi refresh token masih valid (7 hari)
+      if (token.remember && Date.now() < (token.refreshExpiresAt as number)) {
+        return await refreshAccessToken(token);
       }
 
-      // Kalau access token masih valid
-      if (Date.now() < (token.accessTokenExpires as number)) {
-        return token;
-      }
-
-      // Kalau expired dan remember aktif
-      if (token.remember) {
-        if (Date.now() < (token.refreshExpiresAt as number)) {
-          return await refreshAccessToken(token);
-        } else {
-          console.log("JWT callback:", {
-            accessExp: token.accessTokenExpires,
-            now: Date.now(),
-            hasUser: !!user,
-          });
-          return { ...token, error: "RefreshTokenExpired" };
-        }
-      }
-
-      // Kalau tidak remember
-      return { ...token, error: "AccessTokenExpired" };
+      // Kalau dua-duanya expired
+      return { ...token, error: "RefreshTokenExpired" };
     },
 
     async session({ session, token }) {
@@ -143,16 +126,11 @@ export const authOptions: AuthOptions = {
         session.user.accessToken = token.accessToken as string;
         session.user.refreshToken = token.refreshToken as string;
         session.user.remember = token.remember as boolean;
-        (session as any).error = token.error ?? null; // hanya isi kalau ada
+        (session as any).error = token.error ?? null;
       }
 
-      const defaultRememberAge = 30 * 24 * 60 * 60; // 30 hari
-      const rememberMaxAge =
-        token.refreshExpiresAt && token.refreshExpiresAt > Date.now()
-          ? Math.floor((token.refreshExpiresAt - Date.now()) / 1000)
-          : defaultRememberAge;
-
-      const maxAge = token.remember ? rememberMaxAge : 60 * 60;
+      // Max age session sesuai token
+      const maxAge = token.remember ? 7 * 24 * 60 * 60 : 4 * 60 * 60; // 7 hari atau 4 jam
       session.maxAge = maxAge;
 
       return session;
@@ -171,7 +149,7 @@ export const authOptions: AuthOptions = {
      ============================================================ */
   session: {
     strategy: "jwt",
-    maxAge: 60 * 60, // fallback default (1 jam)
+    maxAge: 4 * 60 * 60, // 4 jam default
   },
 
   cookies: {
@@ -179,7 +157,7 @@ export const authOptions: AuthOptions = {
       name:
         process.env.NODE_ENV === "production"
           ? "__Secure-next-auth.session-token"
-          : "next-auth.session-token", // ⬅️ perbaikan utama agar tidak error invalid prefix
+          : "next-auth.session-token",
       options: {
         httpOnly: true,
         sameSite: "lax",
