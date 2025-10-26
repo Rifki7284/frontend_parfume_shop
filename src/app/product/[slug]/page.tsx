@@ -43,11 +43,9 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 }
 
 export default async function Page({ params }: { params: Promise<{ slug: string }> }) {
-  const resolvedParams = await params; // ✅ tunggu params dulu
+  const resolvedParams = await params;
   const api = process.env.NEXT_PUBLIC_API_URL;
-
   const res = await fetch(`${api}/api/products/by-slug/${resolvedParams.slug}/`, { cache: "no-store" });
   const data = await res.json();
-
   return <ProductDetail slug={resolvedParams.slug} product={data} />;
 }

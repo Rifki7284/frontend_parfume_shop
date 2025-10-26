@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { PlusCircle, Edit, Trash2, ImageIcon, UploadCloud, Search, ChevronDown, Package, TrendingUp, AlertTriangle, X, ExternalLink, Image, SearchIcon } from "lucide-react"
+import { PlusCircle, Edit, Trash2, UploadCloud, Search, Package, AlertTriangle, X, ExternalLink, Image, SearchIcon } from "lucide-react"
 import { signOut, useSession } from "next-auth/react"
 import ModernGlassPreloader from "@/components/modern-glass-preloader"
 import toast, { Toaster } from 'react-hot-toast';
@@ -27,13 +27,6 @@ interface DeleteConfirmationDialogProps {
     onClose: () => void
     onConfirm: () => void
     itemName?: string
-
-}
-
-type Props = {
-    page: number
-    setPage: (page: number) => void
-    totalPages: number
 }
 function DeleteConfirmationDialog({
     isOpen,
@@ -42,8 +35,7 @@ function DeleteConfirmationDialog({
     itemName,
 }: DeleteConfirmationDialogProps) {
     const [isAnimating, setIsAnimating] = useState<boolean>(false)
-
-    React.useEffect(() => {
+    useEffect(() => {
         if (isOpen) {
             setIsAnimating(true)
         }
@@ -53,7 +45,7 @@ function DeleteConfirmationDialog({
         setIsAnimating(false)
         setTimeout(() => {
             onClose()
-        }, 200) // Delay sesuai durasi animasi
+        }, 200)
     }
 
     if (!isOpen) return null

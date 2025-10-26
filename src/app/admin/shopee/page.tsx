@@ -24,6 +24,7 @@ import { signOut, useSession } from "next-auth/react"
 import ModernGlassPreloader from "@/components/modern-glass-preloader"
 import { StatsCard } from "@/components/stats-card"
 import { useRouter } from "next/navigation"
+import ShopeeOrderDetail from "@/components/admin-shopee-order-detail"
 const Eye = ({ className }: { className?: string }) => (
   <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
     <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
@@ -48,27 +49,6 @@ const SearchIcon = ({ className }: { className?: string }) => (
   </svg>
 )
 
-const FilterIcon = ({ className }: { className?: string }) => (
-  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth={2}
-      d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"
-    />
-  </svg>
-)
-
-const DownloadIcon = ({ className }: { className?: string }) => (
-  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth={2}
-      d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
-    />
-  </svg>
-)
 
 
 export interface MonthlyStats {
@@ -80,6 +60,40 @@ export interface MonthlyStats {
 export interface ShopeeStatsResponse {
   this_month: MonthlyStats;
   last_month: MonthlyStats;
+}
+interface image_info {
+  image_url: string;
+}
+interface ItemList {
+  item_name: string;
+  model_quantity_purchased: number;
+  model_original_price: number;
+  model_discounted_price: number;
+  image_info: image_info;
+  weight: number;
+  item_id?: number;
+  model_id?: number;
+}
+
+interface PackageList {
+  package_number: string;
+  logistics_status: string;
+  shipping_carrier: string;
+  group_shipment_id?: string | null;
+  item_list?: any[];
+}
+
+interface OrderData {
+  order_sn: string;
+  order_status: string;
+  create_time: number;
+  ship_by_date: number;
+  payment_method: string;
+  currency: string;
+  total_amount: number;
+  shipping_carrier: string;
+  item_list: ItemList[];
+  package_list: PackageList[];
 }
 export default function ShopeePage() {
   const [searchTerm, setSearchTerm] = useState("")
@@ -94,6 +108,8 @@ export default function ShopeePage() {
   const api = process.env.NEXT_PUBLIC_API_URL
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1)
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear())
+  const [showDetail, setShowDetail] = useState<boolean>(false)
+  const [orderData, setOrderData] = useState<OrderData | null>(null)
   const [pageSize, setPageSize] = useState(5)
   const [loadStatsNow, setLoadStatsNow] = useState<boolean>(true)
   const [loadStatsPrev, setLoadStatsPrev] = useState<boolean>(true)
@@ -398,7 +414,10 @@ export default function ShopeePage() {
                           <DropdownMenuContent align="end">
                             <DropdownMenuLabel>Aksi</DropdownMenuLabel>
                             <DropdownMenuSeparator />
-                            <DropdownMenuItem onClick={() => console.log("Detail")}>
+                            <DropdownMenuItem onClick={() => {
+                              setShowDetail(true)
+                              setOrderData(order)
+                            }}>
                               <Eye className="mr-2 h-4 w-4" /> Detail
                             </DropdownMenuItem>
                             {order.package_list[0]?.package_number && (
@@ -477,7 +496,10 @@ export default function ShopeePage() {
                       <DropdownMenuContent align="end">
                         <DropdownMenuLabel>Aksi</DropdownMenuLabel>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem onClick={() => console.log("Detail")}>
+                        <DropdownMenuItem onClick={() => {
+                          setShowDetail(true)
+                          setOrderData(order)
+                        }}>
                           <Eye className="mr-2 h-4 w-4" /> Detail
                         </DropdownMenuItem>
                         {order.package_list[0]?.package_number && (
@@ -665,6 +687,9 @@ export default function ShopeePage() {
 
         </CardContent>
       </Card>
+      <ShopeeOrderDetail orderData={orderData}
+        isOpen={showDetail}
+        onClose={() => setShowDetail(false)} />
       <DialogTracking token={session?.user?.accessToken ?? ""} setTrackOpen={setOpenDialog} trackOpen={openDialog} product={product} serialNumber={serialNumber} carrier={carrier} />
     </div>
   )
